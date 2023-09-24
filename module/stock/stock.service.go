@@ -34,11 +34,11 @@ type GoapiResponseType struct {
 	} `json:"data"`
 }
 
-func GetAllStockServices(symbols []string) ([]models.Stock, error) {
+func GetAllStockServices(subscribtions []models.Subscribtion) ([]models.Stock, error) {
 	stocks := []models.Stock{}
-	for _, symbol := range symbols {
+	for _, sub := range subscribtions {
 
-		stock, err := GetEachStockServices(symbol)
+		stock, err := GetEachStockServices(sub.StockSymbol)
 		if err != nil {
 			break
 		}

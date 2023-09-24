@@ -1,7 +1,7 @@
 package models
 
 type Subscribtion struct {
-	StockSymbol string `json:"stockId" gorm:"primaryKey;not null"`
+	StockSymbol string `json:"stockSymbol" gorm:"primaryKey;not null"`
 	UserID int `json:"userId" gorm:"primaryKey;autoIncrement:false"`
 	SupportPrice int `json:"supportPrice"`
 	ResistancePrice int `json:"resistancePrice"`

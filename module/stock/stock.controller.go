@@ -1,28 +1,22 @@
 package stock
 
 import (
-	"fmt"
 	"net/http"
+	"stockels/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-
-type StockReqType struct {
-	StockList []string `json:"stockList"`
-}
-
 func GetStocks(c *gin.Context){
-	req := StockReqType{}
+	req := []models.Subscribtion{}
 	
 	err := c.Bind(&req)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
 	}
-	fmt.Println("REQ: ", req.StockList)
 
-	result, err := GetAllStockServices(req.StockList)
+	result, err := GetAllStockServices(req)
 	c.IndentedJSON(http.StatusCreated, result)
 
 }
