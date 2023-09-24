@@ -1,12 +1,16 @@
 package stock
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"stockels/models"
 	"stockels/utils"
+	"strconv"
+	"time"
 )
 type StockDataType struct {
 	Name string `json:"name"`
@@ -34,25 +38,54 @@ type GoapiResponseType struct {
 	} `json:"data"`
 }
 
-func GetAllStockServices(subscribtions []models.Subscribtion) ([]models.Stock, error) {
-	stocks := []models.Stock{}
+func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
+	subStock := []SubscribtionStockType{}
 	for _, sub := range subscribtions {
 
-		stock, err := GetEachStockServices(sub.StockSymbol)
+		stock, err := GetStockBySymbolService(sub.StockSymbol)
 		if err != nil {
 			break
 		}
-		stocks = append(stocks, stock)
+
+		closePrice, err := strconv.Atoi(stock.ClosePrice)
+		if err != nil {
+			break
+		}
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
 	}
 
-	if len(stocks) == 0 {
-		return stocks, errors.New("Invalid stock symbol!")
+	if len(subStock) == 0 {
+		return subStock, errors.New("Invalid stock symbol!")
 	}
 
-	return stocks, nil
+	return subStock, nil
 }
 
-func GetEachStockServices(symbol string) (models.Stock, error) {
+func GetStockBySymbolService(symbol string) (models.Stock, error) {
+	ctx := context.Background()
+	stock := models.Stock{}
+
+	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
+	if err != nil {
+
+		// Get data from goapi
+		stock, err = GetStockFromAPI(symbol)
+		if err != nil {
+			return models.Stock{}, err
+		}
+
+		err = CacheStock(symbol, stock)
+		return stock, err
+	}
+
+	err = json.Unmarshal([]byte(cachedStock), &stock)
+
+	return stock, err
+
+}
+
+func GetStockFromAPI(symbol string) (models.Stock, error){
+	fmt.Println("Fetching stock with symbol: ", symbol, "to goapi.id")
 	stockMetaData := GoapiResponseType{}
 	res, err := http.Get("https://api.goapi.id/v1/stock/idx/" + symbol + "?api_key=uz0801JrrjNL0sAGpDCSvNzAvj2lBL")
 	if err != nil {
@@ -64,7 +97,7 @@ func GetEachStockServices(symbol string) (models.Stock, error) {
 	}
 	err = json.Unmarshal(stockStreamMetaData, &stockMetaData)
 	if err != nil || stockMetaData.Data.Result == nil {
-		return models.Stock{}, errors.New("Invalid Symbol")
+		return models.Stock{}, errors.New("Failed to fetch data from goapi.id")
 	}
 
 	stock := models.Stock{
@@ -85,4 +118,16 @@ func GetEachStockServices(symbol string) (models.Stock, error) {
 	err = utils.DB().Where(models.Stock{Symbol: symbol}).Assign(stock).FirstOrCreate(&stock).Error
 	
 	return stock, err
+}
+
+func CacheStock(symbol string,stock models.Stock) error {
+	ctx := context.Background()
+	stockStringified, err := json.Marshal(stock)
+
+	if err != nil {
+		return err
+	}
+	err = utils.Cache().Set(ctx, symbol, stockStringified, time.Hour).Err()
+
+	return err
 }

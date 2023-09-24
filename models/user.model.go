@@ -15,5 +15,5 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
-	Subscribtion []Subscribtion `json:"subscribtions"`
+	Subscribtion *[]Subscribtion `json:"subscribtions,omitempty"`
 }

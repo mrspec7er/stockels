@@ -13,5 +13,5 @@ type Stock struct {
 	LowestPrice string `json:"lowestPrice"`
 	Volume string `json:"volume"`
 	LastUpdate string `json:"lastUpdate"`
-	Subscribtion []Subscribtion `json:"subscribtions"`
+	Subscribtion *[]Subscribtion `json:"subscribtions,omitempty"`
 }
