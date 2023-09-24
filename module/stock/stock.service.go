@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
@@ -55,7 +56,7 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 	}
 
 	if len(subStock) == 0 {
-		return subStock, errors.New("Invalid stock symbol!")
+		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
 	}
 
 	return subStock, nil
@@ -87,14 +88,19 @@ func GetStockBySymbolService(symbol string) (models.Stock, error) {
 func GetStockFromAPI(symbol string) (models.Stock, error){
 	fmt.Println("Fetching stock with symbol: ", symbol, "to goapi.id")
 	stockMetaData := GoapiResponseType{}
-	res, err := http.Get("https://api.goapi.id/v1/stock/idx/" + symbol + "?api_key=uz0801JrrjNL0sAGpDCSvNzAvj2lBL")
+
+	upstreamApiUrl := os.Getenv("UPSTREAM_API_URL")
+	upstreamApiKey := os.Getenv("UPSTREAM_API_KEY")
+	res, err := http.Get( upstreamApiUrl + symbol + upstreamApiKey)
 	if err != nil {
 		return models.Stock{}, err
 	}
+
 	stockStreamMetaData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return models.Stock{}, err
 	}
+
 	err = json.Unmarshal(stockStreamMetaData, &stockMetaData)
 	if err != nil || stockMetaData.Data.Result == nil {
 		return models.Stock{}, errors.New("Failed to fetch data from goapi.id")
