@@ -1,8 +1,7 @@
 package models
 
 type Stock struct {
-	ID int `json:"id" gorm:"primaryKey"`
-	Symbol string `json:"symbol" gorm:"unique"`
+	Symbol string `json:"symbol" gorm:"primaryKey;not null"`
 	Name string `json:"name"`
 	Sector string `json:"sector"`
 	Website string `json:"website"`
