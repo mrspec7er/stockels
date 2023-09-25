@@ -24,6 +24,7 @@ func CreateUserService(user models.User) (models.User, error) {
 
 func LoginService(email string, password string) (string, error) {
 	user := models.User{}
+	
 	err := utils.DB().First(&user, "email = ?", email).Error
 	if err != nil {
 		return  "", err
@@ -36,7 +37,7 @@ func LoginService(email string, password string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id": user.ID,
-		"exp": time.Now().Add(time.Duration(time.Now().Day())).Unix(),
+		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	})
 
 	exportToken, err := token.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
