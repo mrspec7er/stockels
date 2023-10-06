@@ -45,3 +45,13 @@ func Login(c *gin.Context)  {
 	c.IndentedJSON(http.StatusCreated, result)
 
 }
+
+func whoami(c *gin.Context)  {
+	user, status := c.Get("user")
+
+	if !status {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Failed to Get User Data!"});
+		return
+	}
+	c.IndentedJSON(http.StatusOK, user)
+}
