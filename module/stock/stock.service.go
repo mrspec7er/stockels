@@ -41,6 +41,7 @@ type GoapiResponseType struct {
 
 func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
 	subStock := []SubscribtionStockType{}
+
 	for _, sub := range subscribtions {
 
 		stock, err := GetStockBySymbolService(sub.StockSymbol)
@@ -53,6 +54,33 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 			break
 		}
 		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
+
+	}
+
+	if len(subStock) == 0 {
+		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
+
+	return subStock, nil
+}
+
+func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {
+	subStock := []models.Subscribtion{}
+
+	for _, sub := range subscribtions {
+		subscribtion := models.Subscribtion{
+			StockSymbol: sub.StockSymbol,
+			UserID: user.ID,
+			SupportPrice: sub.SupportPrice,
+			ResistancePrice: sub.ResistancePrice,
+		}
+		// err := utils.DB().Create(&subscribtion).Error
+		err := utils.DB().Where(models.Subscribtion{StockSymbol: sub.StockSymbol, UserID: user.ID}).Assign(subscribtion).FirstOrCreate(&subscribtion).Error
+		if err != nil {
+			return subStock, err
+		}
+		subStock = append(subStock, subscribtion)
+
 	}
 
 	if len(subStock) == 0 {

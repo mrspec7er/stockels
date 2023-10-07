@@ -11,6 +11,6 @@ import (
 		{
 			routerGroup.POST("/register", Register)
 			routerGroup.POST("/login", Login)
-			routerGroup.GET("/whoami", middleware.Authentication,whoami)
+			routerGroup.GET("/whoami", middleware.Authentication, whoami)
 		}
 	}
