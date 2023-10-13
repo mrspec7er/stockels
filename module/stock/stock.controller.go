@@ -1,6 +1,7 @@
 package stock
 
 import (
+	"fmt"
 	"net/http"
 	"stockels/models"
 
@@ -87,9 +88,13 @@ func GetSubscribtionStocks(c *gin.Context){
 }
 
 func GetStockDetail(c *gin.Context){
-	symbol := c.Param("symbol")
+	symbol := c.Param("symbol");
+	fromDate := c.Query("from");
+	toDate := c.Query("to")
 
-	result, err := GetStockBySymbolService(symbol)
+	fmt.Println(fromDate, toDate)
+
+	result, err := GetStockDetailService(symbol, fromDate, toDate)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return

@@ -30,13 +30,36 @@ type StockPriceType struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-type GoapiResponseType struct {
+type GoapiInformationResponseType struct {
 	Status string `json:"status"`
 	Message string `json:"message"`
 	Data struct {
 		Result *StockDataType `json:"result"`
 		LastPrice *StockPriceType `json:"last_price"`
 	} `json:"data"`
+}
+
+type GoapiPriceResponseType struct {
+	Status string `json:"status"`
+	Message string `json:"message"`
+	Data struct {
+		Count int `json:"count"`
+		Results *[]StockDetailPriceType `json:"results"`
+	} `json:"data"`
+}
+
+type StockDetailPriceType struct {
+	Date string `json:"date"`
+	Open string `json:"open"`
+	High string `json:"high"`
+	Low string `json:"low"`
+	Close string `json:"close"`
+	Volume int `json:"volume"`
+}
+
+type StockDetailType struct {
+	Info models.Stock `json:"info"`
+	Price []StockDetailPriceType `json:"price"`
 }
 
 func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
@@ -132,7 +155,7 @@ func GetStockBySymbolService(symbol string) (models.Stock, error) {
 	if err != nil {
 
 		// Get data from goapi
-		stock, err = GetStockFromAPI(symbol)
+		stock, err = GetStockInfoFromAPI(symbol)
 		if err != nil {
 			return models.Stock{}, err
 		}
@@ -144,12 +167,39 @@ func GetStockBySymbolService(symbol string) (models.Stock, error) {
 	err = json.Unmarshal([]byte(cachedStock), &stock)
 
 	return stock, err
+}
+
+func GetStockDetailService(symbol string, fromDate string, toDate string) (StockDetailType, error) {
+	ctx := context.Background()
+	stock := models.Stock{}
+
+	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
+	if err != nil {
+
+		// Get data from goapi
+		stock, err = GetStockInfoFromAPI(symbol)
+		if err != nil {
+			return StockDetailType{}, err
+		}
+
+		err = CacheStock(symbol, stock)
+		return StockDetailType{}, err
+	}
+
+	err = json.Unmarshal([]byte(cachedStock), &stock)
+	if err != nil {
+		return StockDetailType{}, err
+	}
+
+	stockPrice, err := GetStockPriceFromAPI(symbol, fromDate, toDate)
+
+	return StockDetailType{Info: stock, Price: stockPrice}, err
 
 }
 
-func GetStockFromAPI(symbol string) (models.Stock, error){
-	fmt.Println("Fetching stock with symbol: ", symbol, "to goapi.id")
-	stockMetaData := GoapiResponseType{}
+func GetStockInfoFromAPI(symbol string) (models.Stock, error){
+	fmt.Println("Fetching stock information with symbol: ", symbol, "to goapi.id")
+	stockMetaData := GoapiInformationResponseType{}
 
 	upstreamApiUrl := os.Getenv("UPSTREAM_API_URL")
 	upstreamApiKey := os.Getenv("UPSTREAM_API_KEY")
@@ -167,6 +217,7 @@ func GetStockFromAPI(symbol string) (models.Stock, error){
 	if err != nil || stockMetaData.Data.Result == nil {
 		return models.Stock{}, errors.New("Failed to fetch data from goapi.id")
 	}
+
 
 	stock := models.Stock{
 		Symbol: symbol,
@@ -188,7 +239,36 @@ func GetStockFromAPI(symbol string) (models.Stock, error){
 	return stock, err
 }
 
-func CacheStock(symbol string,stock models.Stock) error {
+func GetStockPriceFromAPI(symbol string, fromDate string, toDate string) ([]StockDetailPriceType, error){
+	fmt.Println("Fetching stock price with symbol: ", symbol, "to goapi.id")
+	stockPriceMetaData := GoapiPriceResponseType{}
+
+	upstreamApiUrl := os.Getenv("UPSTREAM_API_URL")
+	upstreamApiKey := os.Getenv("UPSTREAM_API_KEY")
+
+	fmt.Println(upstreamApiUrl + symbol + "/historical" + upstreamApiKey + "&from=" + fromDate + "&to=" + toDate)
+
+	res, err := http.Get(upstreamApiUrl + symbol + "/historical" + upstreamApiKey + "&from=" + fromDate + "&to=" + toDate)
+	if err != nil {
+		return []StockDetailPriceType{}, err
+	}
+
+	stockPriceStreamMetaData, err := io.ReadAll(res.Body)
+	if err != nil {
+		return []StockDetailPriceType{}, err
+	}
+
+	err = json.Unmarshal(stockPriceStreamMetaData, &stockPriceMetaData)
+	if err != nil || stockPriceMetaData.Data.Results == nil {
+		return []StockDetailPriceType{}, errors.New("Failed to fetch price data from goapi.id")
+	}
+
+	stockPrice := stockPriceMetaData.Data.Results
+	
+	return *stockPrice, err
+}
+
+func CacheStock(symbol string, stock models.Stock) error {
 	ctx := context.Background()
 	stockStringified, err := json.Marshal(stock)
 
