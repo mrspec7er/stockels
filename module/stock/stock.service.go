@@ -172,8 +172,10 @@ func GetStockBySymbolService(symbol string) (models.Stock, error) {
 func GetStockDetailService(symbol string, fromDate string, toDate string) (StockDetailType, error) {
 	ctx := context.Background()
 	stock := models.Stock{}
+	stockPrice := []StockDetailPriceType{}
+	stockDetail := StockDetailType{}
 
-	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
+	cachedStockDetail, err := utils.Cache().Get(ctx, symbol + fromDate + toDate).Result()
 	if err != nil {
 
 		// Get data from goapi
@@ -182,18 +184,25 @@ func GetStockDetailService(symbol string, fromDate string, toDate string) (Stock
 			return StockDetailType{}, err
 		}
 
-		err = CacheStock(symbol, stock)
-		return StockDetailType{}, err
+		stockPrice, err = GetStockPriceFromAPI(symbol, fromDate, toDate)
+		if err != nil {
+			return StockDetailType{}, err
+		}
+
+		stockDetail = StockDetailType{Info: stock, Price: stockPrice}
+
+		err = CacheStockDetail(symbol + fromDate + toDate, stockDetail)
+		return stockDetail, err
 	}
 
-	err = json.Unmarshal([]byte(cachedStock), &stock)
-	if err != nil {
-		return StockDetailType{}, err
-	}
+	err = json.Unmarshal([]byte(cachedStockDetail), &stockDetail)
+	// if err != nil {
+	// 	return StockDetailType{}, err
+	// }
 
-	stockPrice, err := GetStockPriceFromAPI(symbol, fromDate, toDate)
+	// stockPrice, err = GetStockPriceFromAPI(symbol, fromDate, toDate)
 
-	return StockDetailType{Info: stock, Price: stockPrice}, err
+	return stockDetail, err
 
 }
 
@@ -276,6 +285,18 @@ func CacheStock(symbol string, stock models.Stock) error {
 		return err
 	}
 	err = utils.Cache().Set(ctx, symbol, stockStringified, time.Hour).Err()
+
+	return err
+}
+
+func CacheStockDetail(symbol string, stockDetail StockDetailType) error {
+	ctx := context.Background()
+	stockDetailStringified, err := json.Marshal(stockDetail)
+
+	if err != nil {
+		return err
+	}
+	err = utils.Cache().Set(ctx, symbol, stockDetailStringified, time.Hour).Err()
 
 	return err
 }
