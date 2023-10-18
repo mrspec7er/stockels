@@ -117,12 +117,12 @@ func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user mod
 	return subStock, nil
 }
 
-func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, error) {
+func GetSubscribtionStockService(user models.User) (*bytes.Buffer, error) {
 	subscribtions := []models.Subscribtion{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
 	if err != nil {
-		return []SubscribtionStockType{}, err
+		return &bytes.Buffer{}, err
 	}
 
 	subStock := []SubscribtionStockType{}
@@ -143,10 +143,24 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 	}
 
 	if len(subStock) == 0 {
-		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
 	}
 
-	return subStock, nil
+	stocksRecords := [][]string{
+		{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate"},
+	}
+
+	for _, record := range subStock {
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate})
+	}
+
+	stocksRecords = append(stocksRecords, )
+
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(stocksRecords) 
+
+	return csvBuffer, nil
 }
 
 func GenerateStockReportService(user models.User) (string, error) {
@@ -183,7 +197,7 @@ func GenerateStockReportService(user models.User) (string, error) {
 	}
 
 	for _, record := range subStock {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), strconv.Itoa(int(record.SupportPercentage)), strconv.Itoa(int(record.ResistancePercentage))})
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage)})
 	}
 
 	stocksRecords = append(stocksRecords, )
@@ -345,4 +359,8 @@ func CacheStockDetail(symbol string, stockDetail StockDetailType) error {
 	err = utils.Cache().Set(ctx, symbol, stockDetailStringified, time.Hour).Err()
 
 	return err
+}
+
+func PercentageFormat(value float32) string {
+	return strconv.FormatFloat(float64(value), 'f', 2, 64)
 }

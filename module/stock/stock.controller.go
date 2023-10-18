@@ -1,8 +1,6 @@
 package stock
 
 import (
-	"bytes"
-	"encoding/csv"
 	"log"
 	"net/http"
 	"stockels/models"
@@ -99,27 +97,15 @@ func GetSubscribtionStocksReport(c *gin.Context){
 
 	user := userCtx.(models.User)
 
-	stocksData, err := GetSubscribtionStockService(user)
+	stocksBuffer, err := GetSubscribtionStockService(user)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
 	}
 
-	stocksRecords := [][]string{
-		{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate"},
-	}
+	
 
-	for _, record := range stocksData {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate})
-	}
-
-	stocksRecords = append(stocksRecords, )
-
-	csvBuffer := new(bytes.Buffer)
-	writer := csv.NewWriter(csvBuffer)
-	writer.WriteAll(stocksRecords) 
-
-	_, err = c.Writer.Write(csvBuffer.Bytes())
+	_, err = c.Writer.Write(stocksBuffer.Bytes())
 	if err != nil {
 	log.Fatalln("Error in writing with context: ", err.Error())
 	}
