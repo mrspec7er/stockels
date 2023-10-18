@@ -13,5 +13,6 @@ import (
 			routerGroup.GET("/stocks/:symbol", GetStockDetail)
 			routerGroup.POST("/stocks/subscribe", middleware.Authentication, SubscribeToStocks)
 			routerGroup.GET("/stocks/subscribe", middleware.Authentication, GetSubscribtionStocks)
+			routerGroup.GET("/stocks/report", middleware.Authentication, GetSubscribtionStocksReport)
 		}
 	}
