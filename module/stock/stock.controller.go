@@ -125,22 +125,6 @@ func GenerateStockReport(c *gin.Context){
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
 	}
-
-	// stocksRecords := [][]string{
-	// 	{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate"},
-	// }
-
-	// for _, record := range stocksData {
-	// 	stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate})
-	// }
-
-	// stocksRecords = append(stocksRecords, )
-
-	// csvBuffer := new(bytes.Buffer)
-	// writer := csv.NewWriter(csvBuffer)
-	// writer.WriteAll(stocksRecords) 
-
-	// _, err = c.Writer.Write(csvBuffer.Bytes())
 	c.IndentedJSON(http.StatusCreated, reportUrl)
 }
 

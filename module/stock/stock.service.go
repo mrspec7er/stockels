@@ -151,7 +151,7 @@ func GetSubscribtionStockService(user models.User) (*bytes.Buffer, error) {
 	}
 
 	for _, record := range subStock {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate})
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage)})
 	}
 
 	stocksRecords = append(stocksRecords, )
