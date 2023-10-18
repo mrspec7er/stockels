@@ -14,5 +14,6 @@ import (
 			routerGroup.POST("/stocks/subscribe", middleware.Authentication, SubscribeToStocks)
 			routerGroup.GET("/stocks/subscribe", middleware.Authentication, GetSubscribtionStocks)
 			routerGroup.GET("/stocks/report", middleware.Authentication, GetSubscribtionStocksReport)
+			routerGroup.POST("/stocks/generate-report", middleware.Authentication, GenerateStockReport)
 		}
 	}

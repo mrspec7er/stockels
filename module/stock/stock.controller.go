@@ -3,7 +3,6 @@ package stock
 import (
 	"bytes"
 	"encoding/csv"
-	"fmt"
 	"log"
 	"net/http"
 	"stockels/models"
@@ -91,14 +90,6 @@ func GetSubscribtionStocks(c *gin.Context){
 }
 
 func GetSubscribtionStocksReport(c *gin.Context){
-	req := []models.Subscribtion{}
-	
-	err := c.Bind(&req)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-
 	userCtx, status := c.Get("user")
 	
 	if !status  {
@@ -134,12 +125,43 @@ func GetSubscribtionStocksReport(c *gin.Context){
 	}
 }
 
+func GenerateStockReport(c *gin.Context){
+	userCtx, status := c.Get("user")
+	
+	if !status  {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Failed to Get User Data!"});
+		return
+	}
+
+	user := userCtx.(models.User)
+	reportUrl, err := GenerateStockReportService(user)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error());
+		return
+	}
+
+	// stocksRecords := [][]string{
+	// 	{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate"},
+	// }
+
+	// for _, record := range stocksData {
+	// 	stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate})
+	// }
+
+	// stocksRecords = append(stocksRecords, )
+
+	// csvBuffer := new(bytes.Buffer)
+	// writer := csv.NewWriter(csvBuffer)
+	// writer.WriteAll(stocksRecords) 
+
+	// _, err = c.Writer.Write(csvBuffer.Bytes())
+	c.IndentedJSON(http.StatusCreated, reportUrl)
+}
+
 func GetStockDetail(c *gin.Context){
 	symbol := c.Param("symbol");
 	fromDate := c.Query("from");
 	toDate := c.Query("to")
-
-	fmt.Println(fromDate, toDate)
 
 	result, err := GetStockDetailService(symbol, fromDate, toDate)
 	if err != nil {

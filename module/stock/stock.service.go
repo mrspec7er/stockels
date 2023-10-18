@@ -1,7 +1,9 @@
 package stock
 
 import (
+	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +14,8 @@ import (
 	"stockels/utils"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 type StockDataType struct {
 	Name string `json:"name"`
@@ -116,8 +120,6 @@ func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user mod
 func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, error) {
 	subscribtions := []models.Subscribtion{}
 
-	fmt.Println(user)
-
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
 	if err != nil {
 		return []SubscribtionStockType{}, err
@@ -146,6 +148,57 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 
 	return subStock, nil
 }
+
+func GenerateStockReportService(user models.User) (string, error) {
+	subscribtions := []models.Subscribtion{}
+
+	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
+	if err != nil {
+		return "", err
+	}
+
+	subStock := []SubscribtionStockType{}
+
+	for _, sub := range subscribtions {
+
+		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		if err != nil {
+			break
+		}
+
+		closePrice, err := strconv.Atoi(stock.ClosePrice)
+		if err != nil {
+			break
+		}
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
+
+	}
+
+	if len(subStock) == 0 {
+		return "", errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
+
+	stocksRecords := [][]string{
+		{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "supportPrice", "resistancePrice", "supportPercentage", "resistancePercentage"},
+	}
+
+	for _, record := range subStock {
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), strconv.Itoa(int(record.SupportPercentage)), strconv.Itoa(int(record.ResistancePercentage))})
+	}
+
+	stocksRecords = append(stocksRecords, )
+
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(stocksRecords) 
+
+	fileName := uuid.New().String() + ".csv"
+	reportFile, err := utils.FileUploader(csvBuffer, fileName);
+
+	fileUrl := "https://stockels.s3.ap-southeast-1.amazonaws.com/" + *reportFile.Key
+	return fileUrl, err
+}
+
 
 func GetStockBySymbolService(symbol string) (models.Stock, error) {
 	ctx := context.Background()
@@ -196,11 +249,6 @@ func GetStockDetailService(symbol string, fromDate string, toDate string) (Stock
 	}
 
 	err = json.Unmarshal([]byte(cachedStockDetail), &stockDetail)
-	// if err != nil {
-	// 	return StockDetailType{}, err
-	// }
-
-	// stockPrice, err = GetStockPriceFromAPI(symbol, fromDate, toDate)
 
 	return stockDetail, err
 
@@ -254,8 +302,6 @@ func GetStockPriceFromAPI(symbol string, fromDate string, toDate string) ([]Stoc
 
 	upstreamApiUrl := os.Getenv("UPSTREAM_API_URL")
 	upstreamApiKey := os.Getenv("UPSTREAM_API_KEY")
-
-	fmt.Println(upstreamApiUrl + symbol + "/historical" + upstreamApiKey + "&from=" + fromDate + "&to=" + toDate)
 
 	res, err := http.Get(upstreamApiUrl + symbol + "/historical" + upstreamApiKey + "&from=" + fromDate + "&to=" + toDate)
 	if err != nil {
