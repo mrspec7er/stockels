@@ -290,7 +290,7 @@ func GetStockDetailService(symbol string, fromDate string, toDate string) (Stock
 
 		stockDetail = StockDetailType{Info: stock, Price: stockPrice}
 
-		err = CacheStockDetail(symbol + fromDate + toDate, stockDetail)
+		err = CacheStockDetail(symbol + "_" + fromDate + "_" + toDate, stockDetail)
 		return stockDetail, err
 	}
 
@@ -369,26 +369,26 @@ func GetStockPriceFromAPI(symbol string, fromDate string, toDate string) ([]Stoc
 	return *stockPrice, err
 }
 
-func CacheStock(symbol string, stock models.Stock) error {
+func CacheStock(key string, stock models.Stock) error {
 	ctx := context.Background()
 	stockStringified, err := json.Marshal(stock)
 
 	if err != nil {
 		return err
 	}
-	err = utils.Cache().Set(ctx, symbol, stockStringified, time.Hour).Err()
+	err = utils.Cache().Set(ctx, key, stockStringified, time.Hour).Err()
 
 	return err
 }
 
-func CacheStockDetail(symbol string, stockDetail StockDetailType) error {
+func CacheStockDetail(key string, stockDetail StockDetailType) error {
 	ctx := context.Background()
 	stockDetailStringified, err := json.Marshal(stockDetail)
 
 	if err != nil {
 		return err
 	}
-	err = utils.Cache().Set(ctx, symbol, stockDetailStringified, time.Hour).Err()
+	err = utils.Cache().Set(ctx, key, stockDetailStringified, time.Hour).Err()
 
 	return err
 }
