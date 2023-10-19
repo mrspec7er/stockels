@@ -8,13 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SubscribtionStockType struct {
-	models.Stock
-	models.Subscribtion
-	SupportPercentage float32 `json:"supportPercentage"`
-	ResistancePercentage float32 `json:"resistancePercentage"`
-}
-
 func GetStocks(c *gin.Context){
 	req := []models.Subscribtion{}
 	
