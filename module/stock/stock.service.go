@@ -274,7 +274,9 @@ func GetStockDetailService(symbol string, fromDate string, toDate string) (Stock
 	stockPrice := []StockDetailPriceType{}
 	stockDetail := StockDetailType{}
 
-	cachedStockDetail, err := utils.Cache().Get(ctx, symbol + fromDate + toDate).Result()
+	cachedKey := symbol + "_" + fromDate + "_" + toDate
+
+	cachedStockDetail, err := utils.Cache().Get(ctx, cachedKey).Result()
 	if err != nil {
 
 		// Get data from goapi
@@ -290,7 +292,7 @@ func GetStockDetailService(symbol string, fromDate string, toDate string) (Stock
 
 		stockDetail = StockDetailType{Info: stock, Price: stockPrice}
 
-		err = CacheStockDetail(symbol + "_" + fromDate + "_" + toDate, stockDetail)
+		err = CacheStockDetail(cachedKey, stockDetail)
 		return stockDetail, err
 	}
 
