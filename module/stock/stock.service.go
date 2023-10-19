@@ -117,7 +117,39 @@ func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user mod
 	return subStock, nil
 }
 
-func GetSubscribtionStockService(user models.User) (*bytes.Buffer, error) {
+func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, error) {
+	subscribtions := []models.Subscribtion{}
+
+	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
+	if err != nil {
+		return []SubscribtionStockType{}, err
+	}
+
+	subStock := []SubscribtionStockType{}
+
+	for _, sub := range subscribtions {
+
+		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		if err != nil {
+			break
+		}
+
+		closePrice, err := strconv.Atoi(stock.ClosePrice)
+		if err != nil {
+			break
+		}
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
+
+	}
+
+	if len(subStock) == 0 {
+		return []SubscribtionStockType{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
+
+	return subStock, nil
+}
+
+func GetReportSubscribtionStockService(user models.User) (*bytes.Buffer, error) {
 	subscribtions := []models.Subscribtion{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error

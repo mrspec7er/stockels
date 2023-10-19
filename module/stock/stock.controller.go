@@ -97,7 +97,7 @@ func GetSubscribtionStocksReport(c *gin.Context){
 
 	user := userCtx.(models.User)
 
-	stocksBuffer, err := GetSubscribtionStockService(user)
+	stocksBuffer, err := GetReportSubscribtionStockService(user)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
