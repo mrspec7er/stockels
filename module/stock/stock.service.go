@@ -179,11 +179,11 @@ func GetReportSubscribtionStockService(user models.User) (*bytes.Buffer, error) 
 	}
 
 	stocksRecords := [][]string{
-		{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate"},
+		{"symbol", "name", "sector", "supportPercentage", "resistancePercentage", "supportPrice", "resistancePrice", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
 	}
 
 	for _, record := range subStock {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage)})
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage), strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
 
 	stocksRecords = append(stocksRecords, )
@@ -225,11 +225,11 @@ func GenerateStockReportService(user models.User) (string, error) {
 	}
 
 	stocksRecords := [][]string{
-		{"symbol", "name", "sector", "website", "logo", "description", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "supportPrice", "resistancePrice", "supportPercentage", "resistancePercentage"},
+		{"symbol", "name", "sector", "supportPercentage", "resistancePercentage", "supportPrice", "resistancePrice", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
 	}
 
 	for _, record := range subStock {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.Website, record.Logo, record.Description, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage)})
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage), strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
 
 	stocksRecords = append(stocksRecords, )
