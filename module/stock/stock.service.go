@@ -149,17 +149,10 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 	return subStock, nil
 }
 
-func GetReportSubscribtionStockService(user models.User) (*bytes.Buffer, error) {
-	subscribtions := []models.Subscribtion{}
-
-	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
-	if err != nil {
-		return &bytes.Buffer{}, err
-	}
-
+func GetReportStockService(user models.User, stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
 	subStock := []SubscribtionStockType{}
 
-	for _, sub := range subscribtions {
+	for _, sub := range stocksReq {
 
 		stock, err := GetStockBySymbolService(sub.StockSymbol)
 		if err != nil {
