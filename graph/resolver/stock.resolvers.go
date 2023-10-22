@@ -7,26 +7,24 @@ package resolver
 import (
 	"context"
 	"stockels/graph"
-	"stockels/graph/model"
+	"stockels/graph/instance"
 	"stockels/graph/service"
 	"stockels/middleware"
 )
 
 // StockSubscribes is the resolver for the stockSubscribes field.
-func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*model.GetStockData) ([]*model.Subscribtion, error) {
+func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*instance.GetStockData) ([]*instance.Subscribtion, error) {
 	gc, err := middleware.ContextFromAuthMiddleware(ctx)
-
 	if err != nil {
 		return nil, err
 	}
 
 	result, err := service.SubscribeMultipleStock(stocks, gc)
-
 	return result, nil
 }
 
 // GetStocks is the resolver for the getStocks field.
-func (r *queryResolver) GetStocks(ctx context.Context, stocks []*model.GetStockData) ([]*model.StockData, error) {
+func (r *queryResolver) GetStocks(ctx context.Context, stocks []*instance.GetStockData) ([]*instance.StockData, error) {
 	result, err := service.GetMultipleStock(stocks)
 	return result, err
 }

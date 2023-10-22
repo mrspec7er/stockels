@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"stockels/graph/model"
+	"stockels/graph/instance"
 	"stockels/utils"
 	"strings"
 
@@ -38,7 +38,7 @@ func AuthContextMiddleware() gin.HandlerFunc {
 		claims, ok := payload.Claims.(jwt.MapClaims)
 
 		if ok && payload.Valid {
-			user := model.User{}
+			user := instance.User{}
 			err := utils.DB().Find(&user, claims["id"]).Error
 			if err != nil || user.ID == 0 {
 				c.AbortWithStatus(http.StatusUnauthorized);
@@ -55,7 +55,7 @@ func AuthContextMiddleware() gin.HandlerFunc {
 	}
 }
 
-func ContextFromAuthMiddleware(ctx context.Context) (*model.User, error) {
+func ContextFromAuthMiddleware(ctx context.Context) (*instance.User, error) {
 	ginContext := ctx.Value("user")
 	if ginContext == nil {
 		err := fmt.Errorf("Unauthorize user")
@@ -64,7 +64,7 @@ func ContextFromAuthMiddleware(ctx context.Context) (*model.User, error) {
 
 	fmt.Println(reflect.TypeOf(ginContext))
 
-	gc, ok := ginContext.(model.User)
+	gc, ok := ginContext.(instance.User)
 	if !ok {
 		err := fmt.Errorf("gin.Context has wrong type")
 		return nil, err

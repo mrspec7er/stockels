@@ -10,7 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"stockels/graph/model"
+	"stockels/graph/instance"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
@@ -74,8 +74,8 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func GetMultipleStock(subscribtions []*model.GetStockData) ([]*model.StockData, error) {
-	stocks := []*model.StockData{}
+func GetMultipleStock(subscribtions []*instance.GetStockData) ([]*instance.StockData, error) {
+	stocks := []*instance.StockData{}
 
 	for _, sub := range subscribtions {
 
@@ -88,7 +88,7 @@ func GetMultipleStock(subscribtions []*model.GetStockData) ([]*model.StockData, 
 		if err != nil {
 			break
 		}
-		stocks = append(stocks, &model.StockData{Symbol: stock.Symbol, Name: stock.Name, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HigestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: 100 - (float64(sub.SupportPrice) / float64(closePrice) * 100), ResistancePercentage: 100 - (float64(closePrice) / float64(sub.ResistancePrice) * 100)})
+		stocks = append(stocks, &instance.StockData{Symbol: stock.Symbol, Name: stock.Name, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HigestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: 100 - (float64(sub.SupportPrice) / float64(closePrice) * 100), ResistancePercentage: 100 - (float64(closePrice) / float64(sub.ResistancePrice) * 100)})
 		// stocks = append(stocks, model.StockData{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
 
 	}
@@ -100,11 +100,11 @@ func GetMultipleStock(subscribtions []*model.GetStockData) ([]*model.StockData, 
 	return stocks, nil
 }
 
-func SubscribeMultipleStock(subscribtions []*model.GetStockData, user *model.User) ([]*model.Subscribtion, error) {
-	subStock := []*model.Subscribtion{}
+func SubscribeMultipleStock(subscribtions []*instance.GetStockData, user *instance.User) ([]*instance.Subscribtion, error) {
+	subStock := []*instance.Subscribtion{}
 
 	for _, sub := range subscribtions {
-		subscribtion := &model.Subscribtion{
+		subscribtion := &instance.Subscribtion{
 			StockSymbol: sub.StockSymbol,
 			UserID: user.ID,
 			SupportPrice: sub.SupportPrice,

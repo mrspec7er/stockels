@@ -8,7 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"stockels/graph/model"
+	"stockels/graph/instance"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -49,11 +49,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		StockSubscribes func(childComplexity int, stocks []*model.GetStockData) int
+		StockSubscribes func(childComplexity int, stocks []*instance.GetStockData) int
 	}
 
 	Query struct {
-		GetStocks          func(childComplexity int, stocks []*model.GetStockData) int
+		GetStocks          func(childComplexity int, stocks []*instance.GetStockData) int
 		Login              func(childComplexity int, email string, password string) int
 		__resolve__service func(childComplexity int) int
 	}
@@ -99,10 +99,10 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	StockSubscribes(ctx context.Context, stocks []*model.GetStockData) ([]*model.Subscribtion, error)
+	StockSubscribes(ctx context.Context, stocks []*instance.GetStockData) ([]*instance.Subscribtion, error)
 }
 type QueryResolver interface {
-	GetStocks(ctx context.Context, stocks []*model.GetStockData) ([]*model.StockData, error)
+	GetStocks(ctx context.Context, stocks []*instance.GetStockData) ([]*instance.StockData, error)
 	Login(ctx context.Context, email string, password string) (string, error)
 }
 
@@ -135,7 +135,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.StockSubscribes(childComplexity, args["stocks"].([]*model.GetStockData)), true
+		return e.complexity.Mutation.StockSubscribes(childComplexity, args["stocks"].([]*instance.GetStockData)), true
 
 	case "Query.getStocks":
 		if e.complexity.Query.GetStocks == nil {
@@ -147,7 +147,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetStocks(childComplexity, args["stocks"].([]*model.GetStockData)), true
+		return e.complexity.Query.GetStocks(childComplexity, args["stocks"].([]*instance.GetStockData)), true
 
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
@@ -504,10 +504,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_stockSubscribes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []*model.GetStockData
+	var arg0 []*instance.GetStockData
 	if tmp, ok := rawArgs["stocks"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stocks"))
-		arg0, err = ec.unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐGetStockDataᚄ(ctx, tmp)
+		arg0, err = ec.unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋinstanceᚐGetStockDataᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -534,10 +534,10 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getStocks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []*model.GetStockData
+	var arg0 []*instance.GetStockData
 	if tmp, ok := rawArgs["stocks"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stocks"))
-		arg0, err = ec.unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐGetStockDataᚄ(ctx, tmp)
+		arg0, err = ec.unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋinstanceᚐGetStockDataᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -622,7 +622,7 @@ func (ec *executionContext) _Mutation_stockSubscribes(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StockSubscribes(rctx, fc.Args["stocks"].([]*model.GetStockData))
+		return ec.resolvers.Mutation().StockSubscribes(rctx, fc.Args["stocks"].([]*instance.GetStockData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -634,9 +634,9 @@ func (ec *executionContext) _Mutation_stockSubscribes(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Subscribtion)
+	res := resTmp.([]*instance.Subscribtion)
 	fc.Result = res
-	return ec.marshalNSubscribtion2ᚕᚖstockelsᚋgraphᚋmodelᚐSubscribtion(ctx, field.Selections, res)
+	return ec.marshalNSubscribtion2ᚕᚖstockelsᚋgraphᚋinstanceᚐSubscribtion(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_stockSubscribes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -687,7 +687,7 @@ func (ec *executionContext) _Query_getStocks(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetStocks(rctx, fc.Args["stocks"].([]*model.GetStockData))
+		return ec.resolvers.Query().GetStocks(rctx, fc.Args["stocks"].([]*instance.GetStockData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -699,9 +699,9 @@ func (ec *executionContext) _Query_getStocks(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.StockData)
+	res := resTmp.([]*instance.StockData)
 	fc.Result = res
-	return ec.marshalNStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐStockDataᚄ(ctx, field.Selections, res)
+	return ec.marshalNStockData2ᚕᚖstockelsᚋgraphᚋinstanceᚐStockDataᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getStocks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -990,7 +990,7 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_symbol(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_symbol(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_symbol(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1034,7 +1034,7 @@ func (ec *executionContext) fieldContext_StockData_symbol(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_name(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_name(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1078,7 +1078,7 @@ func (ec *executionContext) fieldContext_StockData_name(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_description(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_description(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_description(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1122,7 +1122,7 @@ func (ec *executionContext) fieldContext_StockData_description(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_sector(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_sector(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_sector(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1166,7 +1166,7 @@ func (ec *executionContext) fieldContext_StockData_sector(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_logo(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_logo(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_logo(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1210,7 +1210,7 @@ func (ec *executionContext) fieldContext_StockData_logo(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_website(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_website(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_website(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1254,7 +1254,7 @@ func (ec *executionContext) fieldContext_StockData_website(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_openPrice(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_openPrice(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_openPrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1298,7 +1298,7 @@ func (ec *executionContext) fieldContext_StockData_openPrice(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_closePrice(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_closePrice(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_closePrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1342,7 +1342,7 @@ func (ec *executionContext) fieldContext_StockData_closePrice(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_higestPrice(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_higestPrice(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_higestPrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1386,7 +1386,7 @@ func (ec *executionContext) fieldContext_StockData_higestPrice(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_lowestPrice(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_lowestPrice(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_lowestPrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1430,7 +1430,7 @@ func (ec *executionContext) fieldContext_StockData_lowestPrice(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_volume(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_volume(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_volume(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1474,7 +1474,7 @@ func (ec *executionContext) fieldContext_StockData_volume(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_lastUpdate(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_lastUpdate(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_lastUpdate(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1518,7 +1518,7 @@ func (ec *executionContext) fieldContext_StockData_lastUpdate(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_supportPercentage(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_supportPercentage(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_supportPercentage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1562,7 +1562,7 @@ func (ec *executionContext) fieldContext_StockData_supportPercentage(ctx context
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_resistancePercentage(ctx context.Context, field graphql.CollectedField, obj *model.StockData) (ret graphql.Marshaler) {
+func (ec *executionContext) _StockData_resistancePercentage(ctx context.Context, field graphql.CollectedField, obj *instance.StockData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StockData_resistancePercentage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1606,7 +1606,7 @@ func (ec *executionContext) fieldContext_StockData_resistancePercentage(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Subscribtion_stockSymbol(ctx context.Context, field graphql.CollectedField, obj *model.Subscribtion) (ret graphql.Marshaler) {
+func (ec *executionContext) _Subscribtion_stockSymbol(ctx context.Context, field graphql.CollectedField, obj *instance.Subscribtion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscribtion_stockSymbol(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1650,7 +1650,7 @@ func (ec *executionContext) fieldContext_Subscribtion_stockSymbol(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Subscribtion_userId(ctx context.Context, field graphql.CollectedField, obj *model.Subscribtion) (ret graphql.Marshaler) {
+func (ec *executionContext) _Subscribtion_userId(ctx context.Context, field graphql.CollectedField, obj *instance.Subscribtion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscribtion_userId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1694,7 +1694,7 @@ func (ec *executionContext) fieldContext_Subscribtion_userId(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Subscribtion_supportPrice(ctx context.Context, field graphql.CollectedField, obj *model.Subscribtion) (ret graphql.Marshaler) {
+func (ec *executionContext) _Subscribtion_supportPrice(ctx context.Context, field graphql.CollectedField, obj *instance.Subscribtion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscribtion_supportPrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1738,7 +1738,7 @@ func (ec *executionContext) fieldContext_Subscribtion_supportPrice(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Subscribtion_resistancePrice(ctx context.Context, field graphql.CollectedField, obj *model.Subscribtion) (ret graphql.Marshaler) {
+func (ec *executionContext) _Subscribtion_resistancePrice(ctx context.Context, field graphql.CollectedField, obj *instance.Subscribtion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscribtion_resistancePrice(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1782,7 +1782,7 @@ func (ec *executionContext) fieldContext_Subscribtion_resistancePrice(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1826,7 +1826,7 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_fullName(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_fullName(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_fullName(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1870,7 +1870,7 @@ func (ec *executionContext) fieldContext_User_fullName(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_email(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1914,7 +1914,7 @@ func (ec *executionContext) fieldContext_User_email(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _User_password(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_password(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_password(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1958,7 +1958,7 @@ func (ec *executionContext) fieldContext_User_password(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _User_isVerified(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_isVerified(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_isVerified(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2002,7 +2002,7 @@ func (ec *executionContext) fieldContext_User_isVerified(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2046,7 +2046,7 @@ func (ec *executionContext) fieldContext_User_createdAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2090,7 +2090,7 @@ func (ec *executionContext) fieldContext_User_updatedAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_deletedAt(ctx context.Context, field graphql.CollectedField, obj *instance.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_deletedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3945,8 +3945,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputGetStockData(ctx context.Context, obj interface{}) (model.GetStockData, error) {
-	var it model.GetStockData
+func (ec *executionContext) unmarshalInputGetStockData(ctx context.Context, obj interface{}) (instance.GetStockData, error) {
+	var it instance.GetStockData
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4167,7 +4167,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var stockDataImplementors = []string{"StockData"}
 
-func (ec *executionContext) _StockData(ctx context.Context, sel ast.SelectionSet, obj *model.StockData) graphql.Marshaler {
+func (ec *executionContext) _StockData(ctx context.Context, sel ast.SelectionSet, obj *instance.StockData) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, stockDataImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4271,7 +4271,7 @@ func (ec *executionContext) _StockData(ctx context.Context, sel ast.SelectionSet
 
 var subscribtionImplementors = []string{"Subscribtion"}
 
-func (ec *executionContext) _Subscribtion(ctx context.Context, sel ast.SelectionSet, obj *model.Subscribtion) graphql.Marshaler {
+func (ec *executionContext) _Subscribtion(ctx context.Context, sel ast.SelectionSet, obj *instance.Subscribtion) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, subscribtionImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4325,7 +4325,7 @@ func (ec *executionContext) _Subscribtion(ctx context.Context, sel ast.Selection
 
 var userImplementors = []string{"User"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *instance.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4786,16 +4786,16 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐGetStockDataᚄ(ctx context.Context, v interface{}) ([]*model.GetStockData, error) {
+func (ec *executionContext) unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋinstanceᚐGetStockDataᚄ(ctx context.Context, v interface{}) ([]*instance.GetStockData, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*model.GetStockData, len(vSlice))
+	res := make([]*instance.GetStockData, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNGetStockData2ᚖstockelsᚋgraphᚋmodelᚐGetStockData(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNGetStockData2ᚖstockelsᚋgraphᚋinstanceᚐGetStockData(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4803,7 +4803,7 @@ func (ec *executionContext) unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋmode
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNGetStockData2ᚖstockelsᚋgraphᚋmodelᚐGetStockData(ctx context.Context, v interface{}) (*model.GetStockData, error) {
+func (ec *executionContext) unmarshalNGetStockData2ᚖstockelsᚋgraphᚋinstanceᚐGetStockData(ctx context.Context, v interface{}) (*instance.GetStockData, error) {
 	res, err := ec.unmarshalInputGetStockData(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4823,7 +4823,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐStockDataᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.StockData) graphql.Marshaler {
+func (ec *executionContext) marshalNStockData2ᚕᚖstockelsᚋgraphᚋinstanceᚐStockDataᚄ(ctx context.Context, sel ast.SelectionSet, v []*instance.StockData) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4847,7 +4847,7 @@ func (ec *executionContext) marshalNStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐS
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStockData2ᚖstockelsᚋgraphᚋmodelᚐStockData(ctx, sel, v[i])
+			ret[i] = ec.marshalNStockData2ᚖstockelsᚋgraphᚋinstanceᚐStockData(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4867,7 +4867,7 @@ func (ec *executionContext) marshalNStockData2ᚕᚖstockelsᚋgraphᚋmodelᚐS
 	return ret
 }
 
-func (ec *executionContext) marshalNStockData2ᚖstockelsᚋgraphᚋmodelᚐStockData(ctx context.Context, sel ast.SelectionSet, v *model.StockData) graphql.Marshaler {
+func (ec *executionContext) marshalNStockData2ᚖstockelsᚋgraphᚋinstanceᚐStockData(ctx context.Context, sel ast.SelectionSet, v *instance.StockData) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4892,7 +4892,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNSubscribtion2ᚕᚖstockelsᚋgraphᚋmodelᚐSubscribtion(ctx context.Context, sel ast.SelectionSet, v []*model.Subscribtion) graphql.Marshaler {
+func (ec *executionContext) marshalNSubscribtion2ᚕᚖstockelsᚋgraphᚋinstanceᚐSubscribtion(ctx context.Context, sel ast.SelectionSet, v []*instance.Subscribtion) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4916,7 +4916,7 @@ func (ec *executionContext) marshalNSubscribtion2ᚕᚖstockelsᚋgraphᚋmodel�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOSubscribtion2ᚖstockelsᚋgraphᚋmodelᚐSubscribtion(ctx, sel, v[i])
+			ret[i] = ec.marshalOSubscribtion2ᚖstockelsᚋgraphᚋinstanceᚐSubscribtion(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5254,7 +5254,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOSubscribtion2ᚖstockelsᚋgraphᚋmodelᚐSubscribtion(ctx context.Context, sel ast.SelectionSet, v *model.Subscribtion) graphql.Marshaler {
+func (ec *executionContext) marshalOSubscribtion2ᚖstockelsᚋgraphᚋinstanceᚐSubscribtion(ctx context.Context, sel ast.SelectionSet, v *instance.Subscribtion) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
