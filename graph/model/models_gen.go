@@ -8,11 +8,6 @@ type GetStockData struct {
 	ResistancePrice int    `json:"resistancePrice"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
-}
-
 type StockData struct {
 	Symbol               string  `json:"symbol"`
 	Name                 string  `json:"name"`
@@ -30,14 +25,20 @@ type StockData struct {
 	ResistancePercentage float64 `json:"resistancePercentage"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type Subscribtion struct {
+	StockSymbol     string `json:"stockSymbol"`
+	UserID          int    `json:"userId"`
+	SupportPrice    int    `json:"supportPrice"`
+	ResistancePrice int    `json:"resistancePrice"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID         int     `json:"id"`
+	FullName   string  `json:"fullName"`
+	Email      string  `json:"email"`
+	Password   string  `json:"password"`
+	IsVerified bool    `json:"isVerified"`
+	CreatedAt  string  `json:"createdAt"`
+	UpdatedAt  string  `json:"updatedAt"`
+	DeletedAt  *string `json:"deletedAt,omitempty"`
 }

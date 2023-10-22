@@ -35,7 +35,7 @@ func Config()  {
 	router := gin.Default()
 	stock.Routes(router)
 	user.Routes(router)
-	router.Use(middleware.GinContextToContextMiddleware())
+	router.Use(middleware.AuthContextMiddleware())
 	router.POST("/query", graphqlHandler())
 	router.GET("/", playgroundHandler())
 	router.Run()

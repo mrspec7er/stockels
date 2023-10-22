@@ -1,5 +1,9 @@
-type Query {
-  getStockData(stocks: [GetStockData!]!): [StockData!]!
+extend type Query {
+  getStocks(stocks: [GetStockData!]!): [StockData!]!
+}
+
+type Mutation {
+  stockSubscribes(stocks: [GetStockData!]!): [Subscribtion]!
 }
 
 type StockData {
@@ -21,6 +25,13 @@ type StockData {
 
 input GetStockData {
   stockSymbol: String!
+  supportPrice: Int!
+  resistancePrice: Int!
+}
+
+type Subscribtion {
+  stockSymbol: String!
+  userId: Int!
   supportPrice: Int!
   resistancePrice: Int!
 }

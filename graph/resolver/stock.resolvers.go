@@ -6,18 +6,37 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"stockels/graph"
 	"stockels/graph/model"
 	"stockels/graph/service"
+	"stockels/middleware"
 )
 
-// GetStockData is the resolver for the getStockData field.
-func (r *queryResolver) GetStockData(ctx context.Context, stocks []*model.GetStockData) ([]*model.StockData, error) {
-	result, err := service.GetMultipleStockService(stocks)
+// StockSubscribes is the resolver for the stockSubscribes field.
+func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*model.GetStockData) ([]*model.Subscribtion, error) {
+	gc, err := middleware.ContextFromAuthMiddleware(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("USER: ", gc)
+
+	return []*model.Subscribtion{}, nil
+}
+
+// GetStocks is the resolver for the getStocks field.
+func (r *queryResolver) GetStocks(ctx context.Context, stocks []*model.GetStockData) ([]*model.StockData, error) {
+	result, err := service.GetMultipleStock(stocks)
 	return result, err
 }
+
+// Mutation returns graph.MutationResolver implementation.
+func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

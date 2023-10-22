@@ -13,6 +13,7 @@ import (
 
 func Authentication(c *gin.Context)  {
 	token, err := c.Cookie("Authorization");
+	fmt.Println("TOKEN", token)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)

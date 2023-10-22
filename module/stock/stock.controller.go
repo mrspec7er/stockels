@@ -9,20 +9,20 @@ import (
 )
 
 func GetStocks(c *gin.Context){
-	// req := []models.Subscribtion{}
+	req := []models.Subscribtion{}
 	
-	// err := c.Bind(&req)
-	// if err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, err.Error());
-	// 	return
-	// }
+	err := c.Bind(&req)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error());
+		return
+	}
 
-	// result, err := GetMultipleStockService(req)
-	// if err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, err.Error());
-	// 	return
-	// }
-	// c.IndentedJSON(http.StatusCreated, result)
+	result, err := GetMultipleStockService(req)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error());
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, result)
 
 }
 

@@ -74,12 +74,12 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func GetMultipleStockService(subscribtions []*model.GetStockData) ([]*model.StockData, error) {
+func GetMultipleStock(subscribtions []*model.GetStockData) ([]*model.StockData, error) {
 	stocks := []*model.StockData{}
 
 	for _, sub := range subscribtions {
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		stock, err := GetStockBySymbol(sub.StockSymbol)
 		if err != nil {
 			break
 		}
@@ -94,13 +94,13 @@ func GetMultipleStockService(subscribtions []*model.GetStockData) ([]*model.Stoc
 	}
 
 	if len(stocks) == 0 {
-		return stocks, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return stocks, errors.New("Failed to get data from 'GetStockBySymbol'!")
 	}
 
 	return stocks, nil
 }
 
-func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {
+func SubscribeMultipleStock(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {
 	subStock := []models.Subscribtion{}
 
 	for _, sub := range subscribtions {
@@ -120,13 +120,13 @@ func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user mod
 	}
 
 	if len(subStock) == 0 {
-		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return subStock, errors.New("Failed to get data from 'GetStockBySymbol'!")
 	}
 
 	return subStock, nil
 }
 
-func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, error) {
+func GetSubscribtionStock(user models.User) ([]SubscribtionStockType, error) {
 	subscribtions := []models.Subscribtion{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
@@ -138,7 +138,7 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 
 	for _, sub := range subscribtions {
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		stock, err := GetStockBySymbol(sub.StockSymbol)
 		if err != nil {
 			break
 		}
@@ -152,18 +152,18 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 	}
 
 	if len(subStock) == 0 {
-		return []SubscribtionStockType{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return []SubscribtionStockType{}, errors.New("Failed to get data from 'GetStockBySymbol'!")
 	}
 
 	return subStock, nil
 }
 
-func GetReportStockService(user models.User, stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
+func GetReportStock(user models.User, stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
 	subStock := []SubscribtionStockType{}
 
 	for _, sub := range stocksReq {
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		stock, err := GetStockBySymbol(sub.StockSymbol)
 		if err != nil {
 			break
 		}
@@ -177,7 +177,7 @@ func GetReportStockService(user models.User, stocksReq []models.Subscribtion) (*
 	}
 
 	if len(subStock) == 0 {
-		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbol'!")
 	}
 
 	stocksRecords := [][]string{
@@ -197,7 +197,7 @@ func GetReportStockService(user models.User, stocksReq []models.Subscribtion) (*
 	return csvBuffer, nil
 }
 
-func GenerateStockReportService(user models.User) (string, error) {
+func GenerateStockReport(user models.User) (string, error) {
 	subscribtions := []models.Subscribtion{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
@@ -209,7 +209,7 @@ func GenerateStockReportService(user models.User) (string, error) {
 
 	for _, sub := range subscribtions {
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
+		stock, err := GetStockBySymbol(sub.StockSymbol)
 		if err != nil {
 			break
 		}
@@ -223,7 +223,7 @@ func GenerateStockReportService(user models.User) (string, error) {
 	}
 
 	if len(subStock) == 0 {
-		return "", errors.New("Failed to get data from 'GetStockBySymbolService'!")
+		return "", errors.New("Failed to get data from 'GetStockBySymbol'!")
 	}
 
 	stocksRecords := [][]string{
@@ -248,7 +248,7 @@ func GenerateStockReportService(user models.User) (string, error) {
 }
 
 
-func GetStockBySymbolService(symbol string) (models.Stock, error) {
+func GetStockBySymbol(symbol string) (models.Stock, error) {
 	ctx := context.Background()
 	stock := models.Stock{}
 
@@ -270,7 +270,7 @@ func GetStockBySymbolService(symbol string) (models.Stock, error) {
 	return stock, err
 }
 
-func GetStockDetailService(symbol string, fromDate string, toDate string) (StockDetailType, error) {
+func GetStockDetail(symbol string, fromDate string, toDate string) (StockDetailType, error) {
 	ctx := context.Background()
 	stock := models.Stock{}
 	stockPrice := []StockDetailPriceType{}
