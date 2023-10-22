@@ -16,7 +16,13 @@ import (
 
 func AuthContextMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if values, _ := c.Request.Header["Authorization"]; len(values) == 0 {
+			c.Next()
+			return
+		}
 		token := strings.Split(c.Request.Header["Authorization"][0], " ")[1]
+
+
 		payload, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 			_, ok := t.Method.(*jwt.SigningMethodHMAC)
 			if !ok {
