@@ -1,4 +1,4 @@
-package stock
+package service
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"stockels/graph/model"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
@@ -73,8 +74,8 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
-	subStock := []SubscribtionStockType{}
+func GetMultipleStockService(subscribtions []*model.GetStockData) ([]*model.StockData, error) {
+	stocks := []*model.StockData{}
 
 	for _, sub := range subscribtions {
 
@@ -87,15 +88,16 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 		if err != nil {
 			break
 		}
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
+		stocks = append(stocks, &model.StockData{Symbol: stock.Symbol, Name: stock.Name, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HigestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: 100 - (float64(sub.SupportPrice) / float64(closePrice) * 100), ResistancePercentage: 100 - (float64(closePrice) / float64(sub.ResistancePrice) * 100)})
+		// stocks = append(stocks, model.StockData{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
 
 	}
 
-	if len(subStock) == 0 {
-		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	if len(stocks) == 0 {
+		return stocks, errors.New("Failed to get data from 'GetStockBySymbolService'!")
 	}
 
-	return subStock, nil
+	return stocks, nil
 }
 
 func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {

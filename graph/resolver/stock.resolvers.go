@@ -8,12 +8,12 @@ import (
 	"context"
 	"stockels/graph"
 	"stockels/graph/model"
-	"stockels/module/stock"
+	"stockels/graph/service"
 )
 
 // GetStockData is the resolver for the getStockData field.
 func (r *queryResolver) GetStockData(ctx context.Context, stocks []*model.GetStockData) ([]*model.StockData, error) {
-	result, err := stock.GetMultipleStockService(stocks)
+	result, err := service.GetMultipleStockService(stocks)
 	return result, err
 }
 
