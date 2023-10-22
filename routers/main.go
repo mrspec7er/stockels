@@ -4,8 +4,8 @@ import (
 	"stockels/graph"
 	"stockels/graph/resolver"
 	"stockels/middleware"
-	"stockels/module/stock"
-	"stockels/module/user"
+	"stockels/rest/stock"
+	"stockels/rest/user"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
