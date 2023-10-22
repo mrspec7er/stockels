@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"stockels/graph"
 	"stockels/graph/model"
 	"stockels/graph/service"
@@ -21,9 +20,9 @@ func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*model.
 		return nil, err
 	}
 
-	fmt.Println("USER: ", gc)
+	result, err := service.SubscribeMultipleStock(stocks, gc)
 
-	return []*model.Subscribtion{}, nil
+	return result, nil
 }
 
 // GetStocks is the resolver for the getStocks field.

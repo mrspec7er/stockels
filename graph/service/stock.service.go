@@ -100,11 +100,11 @@ func GetMultipleStock(subscribtions []*model.GetStockData) ([]*model.StockData, 
 	return stocks, nil
 }
 
-func SubscribeMultipleStock(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {
-	subStock := []models.Subscribtion{}
+func SubscribeMultipleStock(subscribtions []*model.GetStockData, user *model.User) ([]*model.Subscribtion, error) {
+	subStock := []*model.Subscribtion{}
 
 	for _, sub := range subscribtions {
-		subscribtion := models.Subscribtion{
+		subscribtion := &model.Subscribtion{
 			StockSymbol: sub.StockSymbol,
 			UserID: user.ID,
 			SupportPrice: sub.SupportPrice,
