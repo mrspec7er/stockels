@@ -1,6 +1,6 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graph/*.graphqls
+  - graph/**/*.graphqls
 
 # Where should the generated server code go?
 exec:
@@ -20,8 +20,8 @@ model:
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: graph
-  package: graph
+  dir: graph/resolver
+  type: Resolver
   filename_template: "{name}.resolvers.go"
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
@@ -49,7 +49,7 @@ resolver:
 # struct_fields_always_pointers: true
 
 # Optional: turn off to make resolvers return values instead of pointers for structs
-# resolvers_always_return_pointers: true
+# resolvers_always_return_pointers: false
 
 # Optional: turn on to return pointers instead of values in unmarshalInput
 # return_pointers_in_unmarshalinput: false
@@ -85,5 +85,3 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
-  Stock:
-    model: stockels/models.Stock

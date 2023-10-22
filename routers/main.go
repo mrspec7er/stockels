@@ -2,6 +2,7 @@ package routers
 
 import (
 	"stockels/graph"
+	"stockels/graph/resolver"
 	"stockels/middleware"
 	"stockels/module/stock"
 	"stockels/module/user"
@@ -14,7 +15,7 @@ import (
 func graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolver.Resolver{}}))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)

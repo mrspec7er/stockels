@@ -1,0 +1,26 @@
+type Query {
+  getStockData(stocks: [GetStockData!]!): [StockData!]!
+}
+
+type StockData {
+  symbol: String!
+  name: String!
+  description: String!
+  sector: String!
+  logo: String!
+  website: String!
+  openPrice: String!
+  closePrice: String!
+  higestPrice: String!
+  lowestPrice: String!
+  volume: String!
+  lastUpdate: String!
+  supportPercentage: Float!
+  resistancePercentage: Float!
+}
+
+input GetStockData {
+  stockSymbol: String!
+  supportPrice: Int!
+  resistancePrice: Int!
+}
