@@ -462,7 +462,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/stock.graphqls" "schema/user.graphqls"
+//go:embed "module/stock/stock.graphqls" "module/user/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -474,8 +474,8 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
-	{Name: "schema/stock.graphqls", Input: sourceData("schema/stock.graphqls"), BuiltIn: false},
-	{Name: "schema/user.graphqls", Input: sourceData("schema/user.graphqls"), BuiltIn: false},
+	{Name: "module/stock/stock.graphqls", Input: sourceData("module/stock/stock.graphqls"), BuiltIn: false},
+	{Name: "module/user/user.graphqls", Input: sourceData("module/user/user.graphqls"), BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
 	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION

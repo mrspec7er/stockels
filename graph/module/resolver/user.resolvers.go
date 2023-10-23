@@ -6,11 +6,10 @@ package resolver
 
 import (
 	"context"
-	"stockels/graph/service"
+	userModule "stockels/graph/module/user"
 )
 
 // Login is the resolver for the login field.
 func (r *queryResolver) Login(ctx context.Context, email string, password string) (string, error) {
-	token, err := service.Login(email, password)
-	return token, err
+	return userModule.Login(email, password)
 }

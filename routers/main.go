@@ -2,7 +2,7 @@ package routers
 
 import (
 	"stockels/graph"
-	"stockels/graph/resolver"
+	"stockels/graph/module/resolver"
 	"stockels/middleware"
 	"stockels/rest/stock"
 	"stockels/rest/user"
