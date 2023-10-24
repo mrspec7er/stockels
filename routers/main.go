@@ -3,6 +3,7 @@ package routers
 import (
 	"stockels/graph"
 	"stockels/graph/module/resolver"
+	"stockels/middleware"
 	"stockels/rest/stock"
 	"stockels/rest/user"
 
@@ -32,7 +33,15 @@ func playgroundHandler() gin.HandlerFunc {
 
 func Config()  {
 	router := gin.Default()
+
+	// GraphQL Route
+	router.Use(middleware.AuthContextMiddleware())
+	router.POST("/query", graphqlHandler())
+	router.GET("/", playgroundHandler())
+
+	// Rest API Route
 	stock.Routes(router)
 	user.Routes(router)
+
 	router.Run()
 }

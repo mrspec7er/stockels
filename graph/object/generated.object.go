@@ -8,6 +8,16 @@ type GetStockData struct {
 	ResistancePrice int    `json:"resistancePrice"`
 }
 
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+type Register struct {
+	FullName string `json:"fullName"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type StockData struct {
 	Symbol               string  `json:"symbol"`
 	Name                 string  `json:"name"`

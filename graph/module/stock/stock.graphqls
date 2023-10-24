@@ -2,7 +2,7 @@ extend type Query {
   getStocks(stocks: [GetStockData!]!): [StockData!]!
 }
 
-type Mutation {
+extend type Mutation {
   stockSubscribes(stocks: [GetStockData!]!): [Subscribtion]!
 }
 

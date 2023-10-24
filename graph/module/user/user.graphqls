@@ -9,6 +9,20 @@ type User {
   deletedAt: String
 }
 
+input Register {
+  fullName: String!
+  email: String!
+  password: String!
+}
+
+type LoginResponse {
+  token: String!
+}
+
 extend type Query {
-  login(email: String!, password: String!): String!
+  login(email: String!, password: String!): LoginResponse!
+}
+
+extend type Mutation {
+  register(payload: Register): User!
 }
