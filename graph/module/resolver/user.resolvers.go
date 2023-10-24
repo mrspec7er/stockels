@@ -6,10 +6,16 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	"stockels/graph/module/user"
+	"stockels/graph/object"
 )
 
+// Register is the resolver for the register field.
+func (r *mutationResolver) Register(ctx context.Context, payload *object.Register) (*object.User, error) {
+	return user.CreateUserService(payload)
+}
+
 // Login is the resolver for the login field.
-func (r *queryResolver) Login(ctx context.Context, email string, password string) (string, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+func (r *queryResolver) Login(ctx context.Context, email string, password string) (*object.LoginResponse, error) {
+	return user.LoginService(email, password)
 }
