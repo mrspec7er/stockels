@@ -1,7 +1,9 @@
 package stock
 
 import (
+	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -148,6 +150,40 @@ func GetStockDetailService(symbol string, fromDate string, toDate string, suppor
 
 }
 
+func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, error) {
+	subStock := []object.StockData{}
+
+	for _, sub := range stocksReq {
+
+		stock, err := GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
+		if err != nil {
+			break
+		}
+
+		subStock =  append(subStock, object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
+	}
+
+	if len(subStock) == 0 {
+		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
+
+	stocksRecords := [][]string{
+		{"symbol", "name", "sector", "supportPercentage", "resistancePercentage", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
+	}
+
+	for _, record := range subStock {
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(float32(record.SupportPercentage)), PercentageFormat(float32(record.ResistancePercentage)), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
+	}
+
+	stocksRecords = append(stocksRecords, )
+
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(stocksRecords) 
+
+	return csvBuffer, nil
+}
+
 func GetStockInfoFromAPI(symbol string, supportPrice int, resistancePrice int) (*object.StockData, error){
 	fmt.Println("Fetching stock information with symbol: ", symbol, "to goapi.id")
 	stockMetaData := GoapiInformationResponseType{}
@@ -245,5 +281,9 @@ func CacheStockDetail(key string, stockDetail *object.StockDetail) error {
 	err = utils.Cache().Set(ctx, key, stockDetailStringified, time.Hour).Err()
 
 	return err
+}
+
+func PercentageFormat(value float32) string {
+	return strconv.FormatFloat(float64(value), 'f', 2, 64)
 }
 

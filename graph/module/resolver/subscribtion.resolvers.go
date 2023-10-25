@@ -6,14 +6,28 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"stockels/graph"
+	"stockels/graph/module/subscribtion"
 	"stockels/graph/object"
+	"stockels/middleware"
 )
 
 // StockSubscribes is the resolver for the stockSubscribes field.
 func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*object.GetStockData) ([]*object.Subscribtion, error) {
-	panic(fmt.Errorf("not implemented: StockSubscribes - stockSubscribes"))
+	user, err := middleware.GetAuthContextMiddleware(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return subscribtion.SubscribeMultipleStockService(stocks, user)
+}
+
+// GetStockSubscribe is the resolver for the getStockSubscribe field.
+func (r *mutationResolver) GetStockSubscribe(ctx context.Context) ([]*object.StockData, error) {
+	user, err := middleware.GetAuthContextMiddleware(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return subscribtion.GetSubscribtionStockService(*user)
 }
 
 // Mutation returns graph.MutationResolver implementation.

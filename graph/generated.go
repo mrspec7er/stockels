@@ -53,8 +53,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Register        func(childComplexity int, payload *object.Register) int
-		StockSubscribes func(childComplexity int, stocks []*object.GetStockData) int
+		GetStockSubscribe func(childComplexity int) int
+		Register          func(childComplexity int, payload *object.Register) int
+		StockSubscribes   func(childComplexity int, stocks []*object.GetStockData) int
 	}
 
 	Query struct {
@@ -121,6 +122,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	StockSubscribes(ctx context.Context, stocks []*object.GetStockData) ([]*object.Subscribtion, error)
+	GetStockSubscribe(ctx context.Context) ([]*object.StockData, error)
 	Register(ctx context.Context, payload *object.Register) (*object.User, error)
 }
 type QueryResolver interface {
@@ -155,6 +157,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoginResponse.Token(childComplexity), true
+
+	case "Mutation.getStockSubscribe":
+		if e.complexity.Mutation.GetStockSubscribe == nil {
+			break
+		}
+
+		return e.complexity.Mutation.GetStockSubscribe(childComplexity), true
 
 	case "Mutation.register":
 		if e.complexity.Mutation.Register == nil {
@@ -937,6 +946,80 @@ func (ec *executionContext) fieldContext_Mutation_stockSubscribes(ctx context.Co
 	if fc.Args, err = ec.field_Mutation_stockSubscribes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_getStockSubscribe(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().GetStockSubscribe(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*object.StockData)
+	fc.Result = res
+	return ec.marshalNStockData2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDataᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "symbol":
+				return ec.fieldContext_StockData_symbol(ctx, field)
+			case "name":
+				return ec.fieldContext_StockData_name(ctx, field)
+			case "description":
+				return ec.fieldContext_StockData_description(ctx, field)
+			case "sector":
+				return ec.fieldContext_StockData_sector(ctx, field)
+			case "logo":
+				return ec.fieldContext_StockData_logo(ctx, field)
+			case "website":
+				return ec.fieldContext_StockData_website(ctx, field)
+			case "openPrice":
+				return ec.fieldContext_StockData_openPrice(ctx, field)
+			case "closePrice":
+				return ec.fieldContext_StockData_closePrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_StockData_highestPrice(ctx, field)
+			case "lowestPrice":
+				return ec.fieldContext_StockData_lowestPrice(ctx, field)
+			case "volume":
+				return ec.fieldContext_StockData_volume(ctx, field)
+			case "lastUpdate":
+				return ec.fieldContext_StockData_lastUpdate(ctx, field)
+			case "supportPercentage":
+				return ec.fieldContext_StockData_supportPercentage(ctx, field)
+			case "resistancePercentage":
+				return ec.fieldContext_StockData_resistancePercentage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockData", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -4995,6 +5078,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "stockSubscribes":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_stockSubscribes(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "getStockSubscribe":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_getStockSubscribe(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
