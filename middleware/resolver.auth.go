@@ -55,7 +55,7 @@ func AuthContextMiddleware() gin.HandlerFunc {
 	}
 }
 
-func ContextFromAuthMiddleware(ctx context.Context) (*models.User, error) {
+func GetAuthContextMiddleware(ctx context.Context) (*models.User, error) {
 	ginContext := ctx.Value("user")
 	if ginContext == nil {
 		err := fmt.Errorf("Unauthorize user")

@@ -7,4 +7,5 @@ type Subscribtion {
 
 extend type Mutation {
   stockSubscribes(stocks: [GetStockData!]!): [Subscribtion]!
+  getStockSubscribe: [StockData!]!
 }

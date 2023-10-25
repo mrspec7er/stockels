@@ -2,6 +2,8 @@ package subscribtion
 
 import (
 	"errors"
+	"stockels/graph/module/stock"
+	"stockels/graph/object"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
@@ -63,10 +65,10 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user models.User) ([]models.Subscribtion, error) {
-	subStock := []models.Subscribtion{}
+func SubscribeMultipleStockService( stocks []*object.GetStockData, user *models.User) ([]*object.Subscribtion, error) {
+	subs := []*object.Subscribtion{}
 
-	for _, sub := range subscribtions {
+	for _, sub := range stocks {
 		subscribtion := models.Subscribtion{
 			StockSymbol: sub.StockSymbol,
 			UserID: user.ID,
@@ -76,50 +78,45 @@ func SubscribeMultipleStockService(subscribtions []models.Subscribtion, user mod
 		// err := utils.DB().Create(&subscribtion).Error
 		err := utils.DB().Where(models.Subscribtion{StockSymbol: sub.StockSymbol, UserID: user.ID}).Assign(subscribtion).FirstOrCreate(&subscribtion).Error
 		if err != nil {
-			return subStock, err
+			return subs, err
 		}
-		subStock = append(subStock, subscribtion)
+		subs = append(subs, &object.Subscribtion{StockSymbol: subscribtion.StockSymbol, UserID: user.ID, SupportPrice: subscribtion.SupportPrice, ResistancePrice: subscribtion.ResistancePrice})
 
 	}
 
-	if len(subStock) == 0 {
-		return subStock, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	if len(subs) == 0 {
+		return subs, errors.New("Failed to get data from 'GetStockBySymbolService'!")
 	}
 
-	return subStock, nil
+	return subs, nil
 }
 
-// func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, error) {
-// 	subscribtions := []models.Subscribtion{}
+func GetSubscribtionStockService(user models.User) ([]*object.StockData, error) {
+	subscribtions := []models.Subscribtion{}
+	stocks := []*object.StockData{}
 
-// 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
-// 	if err != nil {
-// 		return []SubscribtionStockType{}, err
-// 	}
+	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
+	if err != nil {
+		return stocks, err
+	}
 
-// 	subStock := []SubscribtionStockType{}
+	for _, sub := range subscribtions {
 
-// 	for _, sub := range subscribtions {
+		stock, err := stock.GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
+		if err != nil {
+			break
+		}
 
-// 		stock, err := stock.GetStockBySymbolService(sub.StockSymbol)
-// 		if err != nil {
-// 			break
-// 		}
+		stocks = append(stocks, &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
 
-// 		closePrice, err := strconv.Atoi(stock.ClosePrice)
-// 		if err != nil {
-// 			break
-// 		}
-// 		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
+	}
 
-// 	}
+	if len(stocks) == 0 {
+		return stocks, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
 
-// 	if len(subStock) == 0 {
-// 		return []SubscribtionStockType{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
-// 	}
-
-// 	return subStock, nil
-// }
+	return stocks, nil
+}
 
 // func GenerateStockReportService(user models.User) (string, error) {
 // 	subscribtions := []models.Subscribtion{}
