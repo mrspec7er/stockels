@@ -48,19 +48,24 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	GenerateReportResponse struct {
+		ReportURL func(childComplexity int) int
+	}
+
 	LoginResponse struct {
 		Token func(childComplexity int) int
 	}
 
 	Mutation struct {
-		GetStockSubscribe func(childComplexity int) int
-		Register          func(childComplexity int, payload *object.Register) int
-		StockSubscribes   func(childComplexity int, stocks []*object.GetStockData) int
+		Register        func(childComplexity int, payload *object.Register) int
+		StockSubscribes func(childComplexity int, stocks []*object.GetStockData) int
 	}
 
 	Query struct {
+		GenerateReportFile func(childComplexity int) int
 		GetStockBySymbol   func(childComplexity int, symbol string, supportPrice int, resistancePrice int) int
 		GetStockDetail     func(childComplexity int, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) int
+		GetStockSubscribe  func(childComplexity int) int
 		GetStocks          func(childComplexity int, stocks []*object.GetStockData) int
 		Login              func(childComplexity int, email string, password string) int
 		__resolve__service func(childComplexity int) int
@@ -122,13 +127,14 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	StockSubscribes(ctx context.Context, stocks []*object.GetStockData) ([]*object.Subscribtion, error)
-	GetStockSubscribe(ctx context.Context) ([]*object.StockData, error)
 	Register(ctx context.Context, payload *object.Register) (*object.User, error)
 }
 type QueryResolver interface {
 	GetStocks(ctx context.Context, stocks []*object.GetStockData) ([]*object.StockData, error)
 	GetStockBySymbol(ctx context.Context, symbol string, supportPrice int, resistancePrice int) (*object.StockData, error)
 	GetStockDetail(ctx context.Context, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) (*object.StockDetail, error)
+	GetStockSubscribe(ctx context.Context) ([]*object.StockData, error)
+	GenerateReportFile(ctx context.Context) (*object.GenerateReportResponse, error)
 	Login(ctx context.Context, email string, password string) (*object.LoginResponse, error)
 }
 
@@ -151,19 +157,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "GenerateReportResponse.reportUrl":
+		if e.complexity.GenerateReportResponse.ReportURL == nil {
+			break
+		}
+
+		return e.complexity.GenerateReportResponse.ReportURL(childComplexity), true
+
 	case "LoginResponse.token":
 		if e.complexity.LoginResponse.Token == nil {
 			break
 		}
 
 		return e.complexity.LoginResponse.Token(childComplexity), true
-
-	case "Mutation.getStockSubscribe":
-		if e.complexity.Mutation.GetStockSubscribe == nil {
-			break
-		}
-
-		return e.complexity.Mutation.GetStockSubscribe(childComplexity), true
 
 	case "Mutation.register":
 		if e.complexity.Mutation.Register == nil {
@@ -189,6 +195,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StockSubscribes(childComplexity, args["stocks"].([]*object.GetStockData)), true
 
+	case "Query.generateReportFile":
+		if e.complexity.Query.GenerateReportFile == nil {
+			break
+		}
+
+		return e.complexity.Query.GenerateReportFile(childComplexity), true
+
 	case "Query.getStockBySymbol":
 		if e.complexity.Query.GetStockBySymbol == nil {
 			break
@@ -212,6 +225,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetStockDetail(childComplexity, args["symbol"].(string), args["fromDate"].(string), args["toDate"].(string), args["supportPrice"].(int), args["resistancePrice"].(int)), true
+
+	case "Query.getStockSubscribe":
+		if e.complexity.Query.GetStockSubscribe == nil {
+			break
+		}
+
+		return e.complexity.Query.GetStockSubscribe(childComplexity), true
 
 	case "Query.getStocks":
 		if e.complexity.Query.GetStocks == nil {
@@ -841,6 +861,50 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _GenerateReportResponse_reportUrl(ctx context.Context, field graphql.CollectedField, obj *object.GenerateReportResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GenerateReportResponse_reportUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReportURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GenerateReportResponse_reportUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GenerateReportResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoginResponse_token(ctx context.Context, field graphql.CollectedField, obj *object.LoginResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoginResponse_token(ctx, field)
 	if err != nil {
@@ -946,80 +1010,6 @@ func (ec *executionContext) fieldContext_Mutation_stockSubscribes(ctx context.Co
 	if fc.Args, err = ec.field_Mutation_stockSubscribes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_getStockSubscribe(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetStockSubscribe(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*object.StockData)
-	fc.Result = res
-	return ec.marshalNStockData2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDataᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "symbol":
-				return ec.fieldContext_StockData_symbol(ctx, field)
-			case "name":
-				return ec.fieldContext_StockData_name(ctx, field)
-			case "description":
-				return ec.fieldContext_StockData_description(ctx, field)
-			case "sector":
-				return ec.fieldContext_StockData_sector(ctx, field)
-			case "logo":
-				return ec.fieldContext_StockData_logo(ctx, field)
-			case "website":
-				return ec.fieldContext_StockData_website(ctx, field)
-			case "openPrice":
-				return ec.fieldContext_StockData_openPrice(ctx, field)
-			case "closePrice":
-				return ec.fieldContext_StockData_closePrice(ctx, field)
-			case "highestPrice":
-				return ec.fieldContext_StockData_highestPrice(ctx, field)
-			case "lowestPrice":
-				return ec.fieldContext_StockData_lowestPrice(ctx, field)
-			case "volume":
-				return ec.fieldContext_StockData_volume(ctx, field)
-			case "lastUpdate":
-				return ec.fieldContext_StockData_lastUpdate(ctx, field)
-			case "supportPercentage":
-				return ec.fieldContext_StockData_supportPercentage(ctx, field)
-			case "resistancePercentage":
-				return ec.fieldContext_StockData_resistancePercentage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type StockData", field.Name)
-		},
 	}
 	return fc, nil
 }
@@ -1324,6 +1314,128 @@ func (ec *executionContext) fieldContext_Query_getStockDetail(ctx context.Contex
 	if fc.Args, err = ec.field_Query_getStockDetail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getStockSubscribe(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetStockSubscribe(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*object.StockData)
+	fc.Result = res
+	return ec.marshalNStockData2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDataᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getStockSubscribe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "symbol":
+				return ec.fieldContext_StockData_symbol(ctx, field)
+			case "name":
+				return ec.fieldContext_StockData_name(ctx, field)
+			case "description":
+				return ec.fieldContext_StockData_description(ctx, field)
+			case "sector":
+				return ec.fieldContext_StockData_sector(ctx, field)
+			case "logo":
+				return ec.fieldContext_StockData_logo(ctx, field)
+			case "website":
+				return ec.fieldContext_StockData_website(ctx, field)
+			case "openPrice":
+				return ec.fieldContext_StockData_openPrice(ctx, field)
+			case "closePrice":
+				return ec.fieldContext_StockData_closePrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_StockData_highestPrice(ctx, field)
+			case "lowestPrice":
+				return ec.fieldContext_StockData_lowestPrice(ctx, field)
+			case "volume":
+				return ec.fieldContext_StockData_volume(ctx, field)
+			case "lastUpdate":
+				return ec.fieldContext_StockData_lastUpdate(ctx, field)
+			case "supportPercentage":
+				return ec.fieldContext_StockData_supportPercentage(ctx, field)
+			case "resistancePercentage":
+				return ec.fieldContext_StockData_resistancePercentage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockData", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_generateReportFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_generateReportFile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GenerateReportFile(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*object.GenerateReportResponse)
+	fc.Result = res
+	return ec.marshalNGenerateReportResponse2ᚖstockelsᚋgraphᚋobjectᚐGenerateReportResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_generateReportFile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "reportUrl":
+				return ec.fieldContext_GenerateReportResponse_reportUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GenerateReportResponse", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -5017,6 +5129,45 @@ func (ec *executionContext) unmarshalInputRegister(ctx context.Context, obj inte
 
 // region    **************************** object.gotpl ****************************
 
+var generateReportResponseImplementors = []string{"GenerateReportResponse"}
+
+func (ec *executionContext) _GenerateReportResponse(ctx context.Context, sel ast.SelectionSet, obj *object.GenerateReportResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, generateReportResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GenerateReportResponse")
+		case "reportUrl":
+			out.Values[i] = ec._GenerateReportResponse_reportUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var loginResponseImplementors = []string{"LoginResponse"}
 
 func (ec *executionContext) _LoginResponse(ctx context.Context, sel ast.SelectionSet, obj *object.LoginResponse) graphql.Marshaler {
@@ -5078,13 +5229,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "stockSubscribes":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_stockSubscribes(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "getStockSubscribe":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getStockSubscribe(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5192,6 +5336,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getStockDetail(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getStockSubscribe":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getStockSubscribe(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "generateReportFile":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_generateReportFile(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -6006,6 +6194,20 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalNGenerateReportResponse2stockelsᚋgraphᚋobjectᚐGenerateReportResponse(ctx context.Context, sel ast.SelectionSet, v object.GenerateReportResponse) graphql.Marshaler {
+	return ec._GenerateReportResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGenerateReportResponse2ᚖstockelsᚋgraphᚋobjectᚐGenerateReportResponse(ctx context.Context, sel ast.SelectionSet, v *object.GenerateReportResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._GenerateReportResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNGetStockData2ᚕᚖstockelsᚋgraphᚋobjectᚐGetStockDataᚄ(ctx context.Context, v interface{}) ([]*object.GetStockData, error) {

@@ -2,6 +2,10 @@
 
 package object
 
+type GenerateReportResponse struct {
+	ReportURL string `json:"reportUrl"`
+}
+
 type GetStockData struct {
 	StockSymbol     string `json:"stockSymbol"`
 	SupportPrice    int    `json:"supportPrice"`

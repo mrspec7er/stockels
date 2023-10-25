@@ -5,7 +5,15 @@ type Subscribtion {
   resistancePrice: Int!
 }
 
+type GenerateReportResponse {
+  reportUrl: String!
+}
+
+extend type Query {
+  getStockSubscribe: [StockData!]!
+  generateReportFile: GenerateReportResponse!
+}
+
 extend type Mutation {
   stockSubscribes(stocks: [GetStockData!]!): [Subscribtion]!
-  getStockSubscribe: [StockData!]!
 }

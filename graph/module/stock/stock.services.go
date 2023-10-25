@@ -175,8 +175,6 @@ func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, err
 		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(float32(record.SupportPercentage)), PercentageFormat(float32(record.ResistancePercentage)), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
 
-	stocksRecords = append(stocksRecords, )
-
 	csvBuffer := new(bytes.Buffer)
 	writer := csv.NewWriter(csvBuffer)
 	writer.WriteAll(stocksRecords) 
