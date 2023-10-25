@@ -6,26 +6,27 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"stockels/graph"
+	"stockels/graph/module/stock"
 	"stockels/graph/object"
 )
 
-// StockSubscribes is the resolver for the stockSubscribes field.
-func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*object.GetStockData) ([]*object.Subscribtion, error) {
-	panic(fmt.Errorf("not implemented: StockSubscribes - stockSubscribes"))
-}
-
 // GetStocks is the resolver for the getStocks field.
 func (r *queryResolver) GetStocks(ctx context.Context, stocks []*object.GetStockData) ([]*object.StockData, error) {
-	panic(fmt.Errorf("not implemented: GetStocks - getStocks"))
+	return stock.GetMultipleStockService(stocks)
 }
 
-// Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
+// GetStockBySymbol is the resolver for the getStockBySymbol field.
+func (r *queryResolver) GetStockBySymbol(ctx context.Context, symbol string, supportPrice int, resistancePrice int) (*object.StockData, error) {
+	return stock.GetStockBySymbolService(symbol, supportPrice, resistancePrice)
+}
+
+// GetStockDetail is the resolver for the getStockDetail field.
+func (r *queryResolver) GetStockDetail(ctx context.Context, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) (*object.StockDetail, error) {
+	return stock.GetStockDetailService(symbol, fromDate, toDate, supportPrice, resistancePrice)
+}
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

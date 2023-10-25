@@ -4,3 +4,7 @@ type Subscribtion {
   supportPrice: Int!
   resistancePrice: Int!
 }
+
+extend type Mutation {
+  stockSubscribes(stocks: [GetStockData!]!): [Subscribtion]!
+}
