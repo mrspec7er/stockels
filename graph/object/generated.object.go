@@ -27,12 +27,26 @@ type StockData struct {
 	Website              string  `json:"website"`
 	OpenPrice            string  `json:"openPrice"`
 	ClosePrice           string  `json:"closePrice"`
-	HigestPrice          string  `json:"higestPrice"`
+	HighestPrice         string  `json:"highestPrice"`
 	LowestPrice          string  `json:"lowestPrice"`
 	Volume               string  `json:"volume"`
 	LastUpdate           string  `json:"lastUpdate"`
 	SupportPercentage    float64 `json:"supportPercentage"`
 	ResistancePercentage float64 `json:"resistancePercentage"`
+}
+
+type StockDetail struct {
+	Info  *StockData          `json:"info"`
+	Price []*StockDetailPrice `json:"price"`
+}
+
+type StockDetailPrice struct {
+	Date   string `json:"date"`
+	Open   string `json:"open"`
+	High   string `json:"high"`
+	Low    string `json:"low"`
+	Close  string `json:"close"`
+	Volume int    `json:"volume"`
 }
 
 type Subscribtion struct {

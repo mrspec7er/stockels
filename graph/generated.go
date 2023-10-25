@@ -58,6 +58,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetStockBySymbol   func(childComplexity int, symbol string, supportPrice int, resistancePrice int) int
+		GetStockDetail     func(childComplexity int, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) int
 		GetStocks          func(childComplexity int, stocks []*object.GetStockData) int
 		Login              func(childComplexity int, email string, password string) int
 		__resolve__service func(childComplexity int) int
@@ -66,7 +68,7 @@ type ComplexityRoot struct {
 	StockData struct {
 		ClosePrice           func(childComplexity int) int
 		Description          func(childComplexity int) int
-		HigestPrice          func(childComplexity int) int
+		HighestPrice         func(childComplexity int) int
 		LastUpdate           func(childComplexity int) int
 		Logo                 func(childComplexity int) int
 		LowestPrice          func(childComplexity int) int
@@ -78,6 +80,20 @@ type ComplexityRoot struct {
 		Symbol               func(childComplexity int) int
 		Volume               func(childComplexity int) int
 		Website              func(childComplexity int) int
+	}
+
+	StockDetail struct {
+		Info  func(childComplexity int) int
+		Price func(childComplexity int) int
+	}
+
+	StockDetailPrice struct {
+		Close  func(childComplexity int) int
+		Date   func(childComplexity int) int
+		High   func(childComplexity int) int
+		Low    func(childComplexity int) int
+		Open   func(childComplexity int) int
+		Volume func(childComplexity int) int
 	}
 
 	Subscribtion struct {
@@ -109,6 +125,8 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetStocks(ctx context.Context, stocks []*object.GetStockData) ([]*object.StockData, error)
+	GetStockBySymbol(ctx context.Context, symbol string, supportPrice int, resistancePrice int) (*object.StockData, error)
+	GetStockDetail(ctx context.Context, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) (*object.StockDetail, error)
 	Login(ctx context.Context, email string, password string) (*object.LoginResponse, error)
 }
 
@@ -162,6 +180,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StockSubscribes(childComplexity, args["stocks"].([]*object.GetStockData)), true
 
+	case "Query.getStockBySymbol":
+		if e.complexity.Query.GetStockBySymbol == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getStockBySymbol_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetStockBySymbol(childComplexity, args["symbol"].(string), args["supportPrice"].(int), args["resistancePrice"].(int)), true
+
+	case "Query.getStockDetail":
+		if e.complexity.Query.GetStockDetail == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getStockDetail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetStockDetail(childComplexity, args["symbol"].(string), args["fromDate"].(string), args["toDate"].(string), args["supportPrice"].(int), args["resistancePrice"].(int)), true
+
 	case "Query.getStocks":
 		if e.complexity.Query.GetStocks == nil {
 			break
@@ -207,12 +249,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StockData.Description(childComplexity), true
 
-	case "StockData.higestPrice":
-		if e.complexity.StockData.HigestPrice == nil {
+	case "StockData.highestPrice":
+		if e.complexity.StockData.HighestPrice == nil {
 			break
 		}
 
-		return e.complexity.StockData.HigestPrice(childComplexity), true
+		return e.complexity.StockData.HighestPrice(childComplexity), true
 
 	case "StockData.lastUpdate":
 		if e.complexity.StockData.LastUpdate == nil {
@@ -290,6 +332,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StockData.Website(childComplexity), true
+
+	case "StockDetail.info":
+		if e.complexity.StockDetail.Info == nil {
+			break
+		}
+
+		return e.complexity.StockDetail.Info(childComplexity), true
+
+	case "StockDetail.price":
+		if e.complexity.StockDetail.Price == nil {
+			break
+		}
+
+		return e.complexity.StockDetail.Price(childComplexity), true
+
+	case "StockDetailPrice.close":
+		if e.complexity.StockDetailPrice.Close == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.Close(childComplexity), true
+
+	case "StockDetailPrice.date":
+		if e.complexity.StockDetailPrice.Date == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.Date(childComplexity), true
+
+	case "StockDetailPrice.high":
+		if e.complexity.StockDetailPrice.High == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.High(childComplexity), true
+
+	case "StockDetailPrice.low":
+		if e.complexity.StockDetailPrice.Low == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.Low(childComplexity), true
+
+	case "StockDetailPrice.open":
+		if e.complexity.StockDetailPrice.Open == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.Open(childComplexity), true
+
+	case "StockDetailPrice.volume":
+		if e.complexity.StockDetailPrice.Volume == nil {
+			break
+		}
+
+		return e.complexity.StockDetailPrice.Volume(childComplexity), true
 
 	case "Subscribtion.resistancePrice":
 		if e.complexity.Subscribtion.ResistancePrice == nil {
@@ -570,6 +668,90 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getStockBySymbol_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["symbol"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("symbol"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["symbol"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["supportPrice"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("supportPrice"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["supportPrice"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["resistancePrice"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resistancePrice"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resistancePrice"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getStockDetail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["symbol"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("symbol"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["symbol"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["fromDate"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromDate"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["fromDate"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["toDate"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toDate"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["toDate"] = arg2
+	var arg3 int
+	if tmp, ok := rawArgs["supportPrice"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("supportPrice"))
+		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["supportPrice"] = arg3
+	var arg4 int
+	if tmp, ok := rawArgs["resistancePrice"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resistancePrice"))
+		arg4, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resistancePrice"] = arg4
 	return args, nil
 }
 
@@ -887,8 +1069,8 @@ func (ec *executionContext) fieldContext_Query_getStocks(ctx context.Context, fi
 				return ec.fieldContext_StockData_openPrice(ctx, field)
 			case "closePrice":
 				return ec.fieldContext_StockData_closePrice(ctx, field)
-			case "higestPrice":
-				return ec.fieldContext_StockData_higestPrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_StockData_highestPrice(ctx, field)
 			case "lowestPrice":
 				return ec.fieldContext_StockData_lowestPrice(ctx, field)
 			case "volume":
@@ -911,6 +1093,152 @@ func (ec *executionContext) fieldContext_Query_getStocks(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getStocks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getStockBySymbol(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getStockBySymbol(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetStockBySymbol(rctx, fc.Args["symbol"].(string), fc.Args["supportPrice"].(int), fc.Args["resistancePrice"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*object.StockData)
+	fc.Result = res
+	return ec.marshalNStockData2ᚖstockelsᚋgraphᚋobjectᚐStockData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getStockBySymbol(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "symbol":
+				return ec.fieldContext_StockData_symbol(ctx, field)
+			case "name":
+				return ec.fieldContext_StockData_name(ctx, field)
+			case "description":
+				return ec.fieldContext_StockData_description(ctx, field)
+			case "sector":
+				return ec.fieldContext_StockData_sector(ctx, field)
+			case "logo":
+				return ec.fieldContext_StockData_logo(ctx, field)
+			case "website":
+				return ec.fieldContext_StockData_website(ctx, field)
+			case "openPrice":
+				return ec.fieldContext_StockData_openPrice(ctx, field)
+			case "closePrice":
+				return ec.fieldContext_StockData_closePrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_StockData_highestPrice(ctx, field)
+			case "lowestPrice":
+				return ec.fieldContext_StockData_lowestPrice(ctx, field)
+			case "volume":
+				return ec.fieldContext_StockData_volume(ctx, field)
+			case "lastUpdate":
+				return ec.fieldContext_StockData_lastUpdate(ctx, field)
+			case "supportPercentage":
+				return ec.fieldContext_StockData_supportPercentage(ctx, field)
+			case "resistancePercentage":
+				return ec.fieldContext_StockData_resistancePercentage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockData", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getStockBySymbol_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getStockDetail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getStockDetail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetStockDetail(rctx, fc.Args["symbol"].(string), fc.Args["fromDate"].(string), fc.Args["toDate"].(string), fc.Args["supportPrice"].(int), fc.Args["resistancePrice"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*object.StockDetail)
+	fc.Result = res
+	return ec.marshalNStockDetail2ᚖstockelsᚋgraphᚋobjectᚐStockDetail(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getStockDetail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "info":
+				return ec.fieldContext_StockDetail_info(ctx, field)
+			case "price":
+				return ec.fieldContext_StockDetail_price(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockDetail", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getStockDetail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1505,8 +1833,8 @@ func (ec *executionContext) fieldContext_StockData_closePrice(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _StockData_higestPrice(ctx context.Context, field graphql.CollectedField, obj *object.StockData) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StockData_higestPrice(ctx, field)
+func (ec *executionContext) _StockData_highestPrice(ctx context.Context, field graphql.CollectedField, obj *object.StockData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockData_highestPrice(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1519,7 +1847,7 @@ func (ec *executionContext) _StockData_higestPrice(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HigestPrice, nil
+		return obj.HighestPrice, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1536,7 +1864,7 @@ func (ec *executionContext) _StockData_higestPrice(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StockData_higestPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_StockData_highestPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StockData",
 		Field:      field,
@@ -1764,6 +2092,402 @@ func (ec *executionContext) fieldContext_StockData_resistancePercentage(ctx cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetail_info(ctx context.Context, field graphql.CollectedField, obj *object.StockDetail) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetail_info(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Info, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*object.StockData)
+	fc.Result = res
+	return ec.marshalNStockData2ᚖstockelsᚋgraphᚋobjectᚐStockData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetail_info(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetail",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "symbol":
+				return ec.fieldContext_StockData_symbol(ctx, field)
+			case "name":
+				return ec.fieldContext_StockData_name(ctx, field)
+			case "description":
+				return ec.fieldContext_StockData_description(ctx, field)
+			case "sector":
+				return ec.fieldContext_StockData_sector(ctx, field)
+			case "logo":
+				return ec.fieldContext_StockData_logo(ctx, field)
+			case "website":
+				return ec.fieldContext_StockData_website(ctx, field)
+			case "openPrice":
+				return ec.fieldContext_StockData_openPrice(ctx, field)
+			case "closePrice":
+				return ec.fieldContext_StockData_closePrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_StockData_highestPrice(ctx, field)
+			case "lowestPrice":
+				return ec.fieldContext_StockData_lowestPrice(ctx, field)
+			case "volume":
+				return ec.fieldContext_StockData_volume(ctx, field)
+			case "lastUpdate":
+				return ec.fieldContext_StockData_lastUpdate(ctx, field)
+			case "supportPercentage":
+				return ec.fieldContext_StockData_supportPercentage(ctx, field)
+			case "resistancePercentage":
+				return ec.fieldContext_StockData_resistancePercentage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockData", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetail_price(ctx context.Context, field graphql.CollectedField, obj *object.StockDetail) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetail_price(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*object.StockDetailPrice)
+	fc.Result = res
+	return ec.marshalNStockDetailPrice2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDetailPriceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetail_price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetail",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_StockDetailPrice_date(ctx, field)
+			case "open":
+				return ec.fieldContext_StockDetailPrice_open(ctx, field)
+			case "high":
+				return ec.fieldContext_StockDetailPrice_high(ctx, field)
+			case "low":
+				return ec.fieldContext_StockDetailPrice_low(ctx, field)
+			case "close":
+				return ec.fieldContext_StockDetailPrice_close(ctx, field)
+			case "volume":
+				return ec.fieldContext_StockDetailPrice_volume(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StockDetailPrice", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_date(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_open(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_open(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Open, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_open(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_high(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_high(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.High, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_high(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_low(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_low(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Low, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_low(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_close(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_close(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Close, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_close(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StockDetailPrice_volume(ctx context.Context, field graphql.CollectedField, obj *object.StockDetailPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StockDetailPrice_volume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Volume, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StockDetailPrice_volume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StockDetailPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4346,6 +5070,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getStockBySymbol":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getStockBySymbol(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getStockDetail":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getStockDetail(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "login":
 			field := field
 
@@ -4472,8 +5240,8 @@ func (ec *executionContext) _StockData(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "higestPrice":
-			out.Values[i] = ec._StockData_higestPrice(ctx, field, obj)
+		case "highestPrice":
+			out.Values[i] = ec._StockData_highestPrice(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4499,6 +5267,114 @@ func (ec *executionContext) _StockData(ctx context.Context, sel ast.SelectionSet
 			}
 		case "resistancePercentage":
 			out.Values[i] = ec._StockData_resistancePercentage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var stockDetailImplementors = []string{"StockDetail"}
+
+func (ec *executionContext) _StockDetail(ctx context.Context, sel ast.SelectionSet, obj *object.StockDetail) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, stockDetailImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StockDetail")
+		case "info":
+			out.Values[i] = ec._StockDetail_info(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "price":
+			out.Values[i] = ec._StockDetail_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var stockDetailPriceImplementors = []string{"StockDetailPrice"}
+
+func (ec *executionContext) _StockDetailPrice(ctx context.Context, sel ast.SelectionSet, obj *object.StockDetailPrice) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, stockDetailPriceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StockDetailPrice")
+		case "date":
+			out.Values[i] = ec._StockDetailPrice_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "open":
+			out.Values[i] = ec._StockDetailPrice_open(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "high":
+			out.Values[i] = ec._StockDetailPrice_high(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "low":
+			out.Values[i] = ec._StockDetailPrice_low(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "close":
+			out.Values[i] = ec._StockDetailPrice_close(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "volume":
+			out.Values[i] = ec._StockDetailPrice_volume(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5093,6 +5969,10 @@ func (ec *executionContext) marshalNLoginResponse2ᚖstockelsᚋgraphᚋobject�
 	return ec._LoginResponse(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStockData2stockelsᚋgraphᚋobjectᚐStockData(ctx context.Context, sel ast.SelectionSet, v object.StockData) graphql.Marshaler {
+	return ec._StockData(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNStockData2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDataᚄ(ctx context.Context, sel ast.SelectionSet, v []*object.StockData) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -5145,6 +6025,74 @@ func (ec *executionContext) marshalNStockData2ᚖstockelsᚋgraphᚋobjectᚐSto
 		return graphql.Null
 	}
 	return ec._StockData(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStockDetail2stockelsᚋgraphᚋobjectᚐStockDetail(ctx context.Context, sel ast.SelectionSet, v object.StockDetail) graphql.Marshaler {
+	return ec._StockDetail(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStockDetail2ᚖstockelsᚋgraphᚋobjectᚐStockDetail(ctx context.Context, sel ast.SelectionSet, v *object.StockDetail) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._StockDetail(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStockDetailPrice2ᚕᚖstockelsᚋgraphᚋobjectᚐStockDetailPriceᚄ(ctx context.Context, sel ast.SelectionSet, v []*object.StockDetailPrice) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStockDetailPrice2ᚖstockelsᚋgraphᚋobjectᚐStockDetailPrice(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNStockDetailPrice2ᚖstockelsᚋgraphᚋobjectᚐStockDetailPrice(ctx context.Context, sel ast.SelectionSet, v *object.StockDetailPrice) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._StockDetailPrice(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
