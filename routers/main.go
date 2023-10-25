@@ -5,6 +5,7 @@ import (
 	"stockels/graph/module/resolver"
 	"stockels/middleware"
 	"stockels/rest/stock"
+	"stockels/rest/subscribtion"
 	"stockels/rest/user"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -42,6 +43,7 @@ func Config()  {
 	// Rest API Route
 	stock.Routes(router)
 	user.Routes(router)
+	subscribtion.Routes(router)
 
 	router.Run()
 }
