@@ -22,7 +22,7 @@ func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*object
 }
 
 // GetStockSubscribe is the resolver for the getStockSubscribe field.
-func (r *mutationResolver) GetStockSubscribe(ctx context.Context) ([]*object.StockData, error) {
+func (r *queryResolver) GetStockSubscribe(ctx context.Context) ([]*object.StockData, error) {
 	user, err := middleware.GetAuthContextMiddleware(ctx)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,17 @@ func (r *mutationResolver) GetStockSubscribe(ctx context.Context) ([]*object.Sto
 	return subscribtion.GetSubscribtionStockService(*user)
 }
 
+// GenerateReportFile is the resolver for the generateReportFile field.
+func (r *queryResolver) GenerateReportFile(ctx context.Context) (*object.GenerateReportResponse, error) {
+	user, err := middleware.GetAuthContextMiddleware(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return subscribtion.GenerateStockReportService(*user)
+}
+
 // Mutation returns graph.MutationResolver implementation.
 func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
