@@ -145,8 +145,6 @@ func GenerateStockReportService(user models.User) (string, error) {
 		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage), strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
 
-	stocksRecords = append(stocksRecords, )
-
 	csvBuffer := new(bytes.Buffer)
 	writer := csv.NewWriter(csvBuffer)
 	writer.WriteAll(stocksRecords) 

@@ -2,6 +2,7 @@ package routers
 
 import (
 	"stockels/graph"
+	"stockels/graph/module/controller"
 	"stockels/graph/module/resolver"
 	"stockels/middleware"
 	"stockels/rest/stock"
@@ -39,6 +40,7 @@ func Config()  {
 	router.Use(middleware.AuthContextMiddleware())
 	router.POST("/query", graphqlHandler())
 	router.GET("/", playgroundHandler())
+	controller.Routes(router)
 
 	// Rest API Route
 	stock.Routes(router)
