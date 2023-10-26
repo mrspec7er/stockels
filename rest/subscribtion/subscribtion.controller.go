@@ -1,30 +1,11 @@
-package stock
+package subscribtion
 
 import (
-	"log"
 	"net/http"
 	"stockels/models"
 
 	"github.com/gin-gonic/gin"
 )
-
-func GetStocks(c *gin.Context){
-	req := []models.Subscribtion{}
-	
-	err := c.Bind(&req)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-
-	result, err := GetMultipleStockService(req)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-	c.IndentedJSON(http.StatusCreated, result)
-
-}
 
 func SubscribeToStocks(c *gin.Context){
 	req := []models.Subscribtion{}
@@ -80,37 +61,6 @@ func GetSubscribtionStocks(c *gin.Context){
 
 }
 
-func GetStocksReport(c *gin.Context){
-	req := []models.Subscribtion{}
-	
-	err := c.Bind(&req)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-	userCtx, status := c.Get("user")
-	
-	if !status  {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Failed to Get User Data!"});
-		return
-	}
-
-	user := userCtx.(models.User)
-
-	stocksBuffer, err := GetReportStockService(user, req)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-
-	
-
-	_, err = c.Writer.Write(stocksBuffer.Bytes())
-	if err != nil {
-	log.Fatalln("Error in writing with context: ", err.Error())
-	}
-}
-
 func GenerateStockReport(c *gin.Context){
 	userCtx, status := c.Get("user")
 	
@@ -126,18 +76,4 @@ func GenerateStockReport(c *gin.Context){
 		return
 	}
 	c.IndentedJSON(http.StatusCreated, reportUrl)
-}
-
-func GetStockDetail(c *gin.Context){
-	symbol := c.Param("symbol");
-	fromDate := c.Query("from");
-	toDate := c.Query("to")
-
-	result, err := GetStockDetailService(symbol, fromDate, toDate)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error());
-		return
-	}
-
-	c.IndentedJSON(http.StatusCreated, result)
 }
