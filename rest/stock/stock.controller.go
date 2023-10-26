@@ -34,16 +34,8 @@ func GetStocksReport(c *gin.Context){
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
 	}
-	userCtx, status := c.Get("user")
-	
-	if !status  {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Failed to Get User Data!"});
-		return
-	}
 
-	user := userCtx.(models.User)
-
-	stocksBuffer, err := GetReportStockService(user, req)
+	stocksBuffer, err := GetReportStockService(req)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return
