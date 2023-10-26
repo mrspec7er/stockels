@@ -1,0 +1,52 @@
+type StockData {
+  symbol: String!
+  name: String!
+  description: String!
+  sector: String!
+  logo: String!
+  website: String!
+  openPrice: String!
+  closePrice: String!
+  highestPrice: String!
+  lowestPrice: String!
+  volume: String!
+  lastUpdate: String!
+  supportPercentage: Float!
+  resistancePercentage: Float!
+}
+
+type StockDetailPrice {
+  date: String!
+  open: String!
+  high: String!
+  low: String!
+  close: String!
+  volume: Int!
+}
+
+type StockDetail {
+  info: StockData!
+  price: [StockDetailPrice!]!
+}
+
+input GetStockData {
+  stockSymbol: String!
+  supportPrice: Int!
+  resistancePrice: Int!
+}
+
+extend type Query {
+  getStocks(stocks: [GetStockData!]!): [StockData!]!
+  getStockBySymbol(
+    symbol: String!
+    supportPrice: Int!
+    resistancePrice: Int!
+  ): StockData!
+  getStockDetail(
+    symbol: String!
+    fromDate: String!
+    toDate: String!
+    supportPrice: Int!
+    resistancePrice: Int!
+  ): StockDetail!
+}
