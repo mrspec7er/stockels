@@ -1,8 +1,6 @@
 package stock
 
 import (
-	"stockels/middleware"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,6 +9,6 @@ import (
 		{
 			routerGroup.POST("/stocks", GetStocks)
 			routerGroup.GET("/stocks/:symbol", GetStockDetail)
-			routerGroup.POST("/stocks/report", middleware.Authentication, GetStocksReport)
+			routerGroup.POST("/stocks/report", GetStocksReport)
 		}
 	}

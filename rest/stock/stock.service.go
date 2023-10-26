@@ -96,7 +96,7 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 	return subStock, nil
 }
 
-func GetReportStockService(user models.User, stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
+func GetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
 	subStock := []SubscribtionStockType{}
 
 	for _, sub := range stocksReq {
