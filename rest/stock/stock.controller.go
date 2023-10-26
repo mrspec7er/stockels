@@ -35,7 +35,7 @@ func GetStocksReport(c *gin.Context){
 		return
 	}
 
-	stocksBuffer, err := GetReportStockService(req)
+	stocksBuffer, err := AsyncGetReportStockService(req)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error());
 		return

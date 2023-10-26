@@ -13,6 +13,7 @@ import (
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
+	"sync"
 	"time"
 )
 type StockDataType struct {
@@ -284,4 +285,79 @@ func CacheStockDetail(key string, stockDetail StockDetailType) error {
 
 func PercentageFormat(value float32) string {
 	return strconv.FormatFloat(float64(value), 'f', 2, 64)
+}
+
+func AsyncGetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
+	subStock := []SubscribtionStockType{}
+
+	asyncStockState := make(chan models.Stock, len(stocksReq))
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(stocksReq))
+	for _, sub := range stocksReq {
+
+		go AsyncGetStockBySymbolService(sub.StockSymbol, asyncStockState, wg)
+		
+	}
+	wg.Wait()
+	close(asyncStockState)
+	
+	for stock := range asyncStockState {
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
+	}
+	
+	if len(subStock) == 0 {
+		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	}
+
+	stocksRecords := [][]string{
+		{"symbol", "name", "sector", "supportPercentage", "resistancePercentage", "supportPrice", "resistancePrice", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
+	}
+
+	for _, record := range subStock {
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage), strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
+	}
+
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(stocksRecords) 
+
+	return csvBuffer, nil
+}
+
+func AsyncGetStockBySymbolService(symbol string, asyncStockState chan models.Stock, wg *sync.WaitGroup) {
+	ctx := context.Background()
+	stock := models.Stock{}
+
+	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
+	if err != nil {
+		fmt.Println("UNCHACHED")
+		// Get data from goapi
+		stock, err = GetStockInfoFromAPI(symbol)
+		if err != nil {
+			fmt.Println("STOCKS 1")
+			panic(err.Error())
+		}
+
+		err = CacheStock(symbol, stock)
+		if err != nil {
+			fmt.Println("STOCKS 2")
+			panic(err.Error())
+		}
+		// fmt.Println("STOCKS", stock)
+		asyncStockState <- stock
+		wg.Done()
+		// We might be can return in this and doesn.t need to use if else on next step
+	} else {
+		fmt.Println("CHACHED", symbol)
+		err = json.Unmarshal([]byte(cachedStock), &stock)
+		if err != nil {
+			fmt.Println("STOCKS 3")
+			panic(err.Error())
+		}
+	
+		asyncStockState <- stock
+		wg.Done()
+	}
+
 }
