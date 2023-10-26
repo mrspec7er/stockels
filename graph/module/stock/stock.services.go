@@ -150,7 +150,7 @@ func GetStockDetailService(symbol string, fromDate string, toDate string, suppor
 
 }
 
-func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, error) {
+func GetReportStockService(stocksReq []*models.Subscribtion) (*bytes.Buffer, error) {
 	subStock := []object.StockData{}
 
 	for _, sub := range stocksReq {
