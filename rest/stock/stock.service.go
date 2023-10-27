@@ -8,11 +8,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
+	"sync"
 	"time"
 )
 type StockDataType struct {
@@ -74,19 +76,19 @@ type GoapiPriceResponseType struct {
 func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
 	subStock := []SubscribtionStockType{}
 
+	stockCtx := make(chan models.Stock, len(subscribtions))
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(subscribtions))
 	for _, sub := range subscribtions {
+		go GetStockBySymbolService(sub.StockSymbol, stockCtx, wg)
+	}
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
-		if err != nil {
-			break
-		}
+	wg.Wait()
+	close(stockCtx)
 
-		closePrice, err := strconv.Atoi(stock.ClosePrice)
-		if err != nil {
-			break
-		}
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
-
+	for stock := range stockCtx {
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
 	}
 
 	if len(subStock) == 0 {
@@ -99,19 +101,20 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 func GetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, error) {
 	subStock := []SubscribtionStockType{}
 
+	stockCtx := make(chan models.Stock, len(stocksReq))
+
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(stocksReq))
 	for _, sub := range stocksReq {
+		go GetStockBySymbolService(sub.StockSymbol, stockCtx, wg)
+	}
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol)
-		if err != nil {
-			break
-		}
+	wg.Wait()
+	close(stockCtx)
 
-		closePrice, err := strconv.Atoi(stock.ClosePrice)
-		if err != nil {
-			break
-		}
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
-
+	for stock := range stockCtx {
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
 	}
 
 	if len(subStock) == 0 {
@@ -133,26 +136,43 @@ func GetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, erro
 	return csvBuffer, nil
 }
 
-func GetStockBySymbolService(symbol string) (models.Stock, error) {
+func GetStockBySymbolService(symbol string, stockCtx chan models.Stock, wg *sync.WaitGroup) {
 	ctx := context.Background()
 	stock := models.Stock{}
 
 	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
 	if err != nil {
 
+		
 		// Get data from goapi
 		stock, err = GetStockInfoFromAPI(symbol)
 		if err != nil {
-			return models.Stock{}, err
+			log.Println(err.Error())
+			return
+		}
+		
+		err = CacheStock(symbol, stock)
+		if err != nil {
+			log.Println(err.Error())
+			return
 		}
 
-		err = CacheStock(symbol, stock)
-		return stock, err
+		stockCtx <- stock
+		wg.Done()
+		return
+		
+	} 
+	err = json.Unmarshal([]byte(cachedStock), &stock)
+	if err != nil {
+		log.Println(err.Error())
+		return
 	}
 
-	err = json.Unmarshal([]byte(cachedStock), &stock)
+	stockCtx <- stock
+	wg.Done()
+	return 
+	
 
-	return stock, err
 }
 
 func GetStockDetailService(symbol string, fromDate string, toDate string) (StockDetailType, error) {

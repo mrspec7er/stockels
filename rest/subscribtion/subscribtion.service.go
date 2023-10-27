@@ -8,6 +8,7 @@ import (
 	"stockels/rest/stock"
 	"stockels/utils"
 	"strconv"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -86,19 +87,19 @@ func GetSubscribtionStockService(user models.User) ([]SubscribtionStockType, err
 
 	subStock := []SubscribtionStockType{}
 
+	stockCtx := make(chan models.Stock, len(subscribtions))
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(subscribtions))
 	for _, sub := range subscribtions {
+		go stock.GetStockBySymbolService(sub.StockSymbol, stockCtx, wg)
+	}
 
-		stock, err := stock.GetStockBySymbolService(sub.StockSymbol)
-		if err != nil {
-			break
-		}
+	wg.Wait()
+	close(stockCtx)
 
-		closePrice, err := strconv.Atoi(stock.ClosePrice)
-		if err != nil {
-			break
-		}
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
-
+	for stock := range stockCtx {
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
 	}
 
 	if len(subStock) == 0 {
@@ -118,19 +119,19 @@ func GenerateStockReportService(user models.User) (string, error) {
 
 	subStock := []SubscribtionStockType{}
 
+	stockCtx := make(chan models.Stock, len(subscribtions))
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(subscribtions))
 	for _, sub := range subscribtions {
+		go stock.GetStockBySymbolService(sub.StockSymbol, stockCtx, wg)
+	}
 
-		stock, err := stock.GetStockBySymbolService(sub.StockSymbol)
-		if err != nil {
-			break
-		}
+	wg.Wait()
+	close(stockCtx)
 
-		closePrice, err := strconv.Atoi(stock.ClosePrice)
-		if err != nil {
-			break
-		}
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: sub, SupportPercentage: 100 - (float32(sub.SupportPrice) / float32(closePrice) * 100), ResistancePercentage: 100 - (float32(closePrice) / float32(sub.ResistancePrice) * 100)})
-
+	for stock := range stockCtx {
+		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
 	}
 
 	if len(subStock) == 0 {
