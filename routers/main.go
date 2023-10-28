@@ -5,9 +5,6 @@ import (
 	"stockels/graph/module/controller"
 	"stockels/graph/module/resolver"
 	"stockels/middleware"
-	"stockels/rest/stock"
-	"stockels/rest/subscribtion"
-	"stockels/rest/user"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -36,16 +33,10 @@ func playgroundHandler() gin.HandlerFunc {
 func Config()  {
 	router := gin.Default()
 
-	// GraphQL Route
 	router.Use(middleware.AuthContextMiddleware())
 	router.POST("/query", graphqlHandler())
 	router.GET("/", playgroundHandler())
 	controller.Routes(router)
-
-	// Rest API Route
-	stock.Routes(router)
-	user.Routes(router)
-	subscribtion.Routes(router)
 
 	router.Run()
 }
