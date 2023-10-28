@@ -133,7 +133,6 @@ func GetStockDetailService(symbol string, fromDate string, toDate string, suppor
 		}
 
 		stockPrice, err = GetStockPriceFromAPI(symbol, fromDate, toDate)
-		fmt.Println("STOCK_PRICE", stockPrice)
 		if err != nil {
 			return &object.StockDetail{}, err
 		}
