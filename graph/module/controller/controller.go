@@ -4,13 +4,13 @@ import (
 	"log"
 	"net/http"
 	"stockels/graph/module/stock"
-	"stockels/models"
+	"stockels/graph/object"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetStocksReport(c *gin.Context){
-	req := []*models.Subscribtion{}
+	req := []*object.GetStockData{}
 	
 	err := c.Bind(&req)
 	if err != nil {

@@ -8,12 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"stockels/graph/object"
 	"stockels/models"
 	"stockels/utils"
 	"strconv"
+	"sync"
 	"time"
 )
 type StockDataType struct {
@@ -72,16 +74,21 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func GetMultipleStockService(subscribtions []*object.GetStockData) ([]*object.StockData, error) {
+func GetMultipleStockService(stocksReq []*object.GetStockData) ([]*object.StockData, error) {
 	stocks := []*object.StockData{}
 
-	for _, sub := range subscribtions {
+	stockCtx := make(chan *object.StockData, len(stocksReq))
+	wg := &sync.WaitGroup{}
+	wg.Add(len(stocksReq))
 
-		stock, err := GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
-		if err != nil {
-			break
-		}
+	for _, sub := range stocksReq {
+		go AsyncGetStockService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice, stockCtx, wg)
+	}
 
+	wg.Wait()
+	close(stockCtx)
+
+	for stock := range stockCtx {
 		stocks = append(stocks, &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
 	}
 
@@ -173,21 +180,12 @@ func GetStockDetailService(symbol string, fromDate string, toDate string, suppor
 
 }
 
-func GetReportStockService(stocksReq []*models.Subscribtion) (*bytes.Buffer, error) {
-	subStock := []object.StockData{}
+func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, error) {
+	
+	subStock, err := GetMultipleStockService(stocksReq)
 
-	for _, sub := range stocksReq {
-
-		stock, err := GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
-		if err != nil {
-			break
-		}
-
-		subStock =  append(subStock, object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
-	}
-
-	if len(subStock) == 0 {
-		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	if err != nil {
+		return &bytes.Buffer{}, errors.New("Failed to get data from 'GetMultipleStockService'!")
 	}
 
 	stocksRecords := [][]string{
@@ -203,6 +201,56 @@ func GetReportStockService(stocksReq []*models.Subscribtion) (*bytes.Buffer, err
 	writer.WriteAll(stocksRecords) 
 
 	return csvBuffer, nil
+}
+
+func AsyncGetStockService( symbol string, supportPrice int, resistancePrice int, stockCtx chan *object.StockData, wg *sync.WaitGroup) {
+	ctx := context.Background()
+	stock := &object.StockData{}
+
+	cachedStock, err := utils.Cache().Get(ctx, symbol).Result()
+	if err != nil {
+
+		// Get data from goapi
+		stock, err = GetStockInfoFromAPI(symbol)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		supportPercentage, resistancePercentage, err := GetSupportAndResistancePercentage(stock.ClosePrice, supportPrice, resistancePrice)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		stock.SupportPercentage = *supportPercentage
+		stock.ResistancePercentage = *resistancePercentage
+
+		err = CacheStock(symbol, stock)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		stockCtx <- stock
+		wg.Done()
+		return
+	}
+
+	err = json.Unmarshal([]byte(cachedStock), &stock)
+
+	supportPercentage, resistancePercentage, err := GetSupportAndResistancePercentage(stock.ClosePrice, supportPrice, resistancePrice)
+	if err != nil {
+		log.Println(err.Error())
+			return
+	}
+
+	stock.SupportPercentage = *supportPercentage
+	stock.ResistancePercentage = *resistancePercentage
+
+	stockCtx <- stock
+	wg.Done()
+	return 
 }
 
 func GetStockInfoFromAPI(symbol string) (*object.StockData, error){
