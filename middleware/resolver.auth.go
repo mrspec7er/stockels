@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"reflect"
 	"stockels/models"
 	"stockels/utils"
 	"strings"
@@ -61,8 +60,6 @@ func GetAuthContextMiddleware(ctx context.Context) (*models.User, error) {
 		err := fmt.Errorf("Unauthorize user")
 		return nil, err
 	}
-
-	fmt.Println(reflect.TypeOf(ginContext))
 
 	gc, ok := ginContext.(models.User)
 	if !ok {
