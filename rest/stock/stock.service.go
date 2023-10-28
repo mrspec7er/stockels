@@ -73,8 +73,8 @@ type GoapiPriceResponseType struct {
 	} `json:"data"`
 }
 
-func GetMultipleStockService(subscribtions []models.Subscribtion) ([]SubscribtionStockType, error) {
-	subStock := []SubscribtionStockType{}
+func GetMultipleStockService(subscribtions []models.Subscribtion) ([]models.Stock, error) {
+	subStock := []models.Stock{}
 
 	stockCtx := make(chan models.Stock, len(subscribtions))
 	wg := &sync.WaitGroup{}
@@ -88,7 +88,7 @@ func GetMultipleStockService(subscribtions []models.Subscribtion) ([]Subscribtio
 	close(stockCtx)
 
 	for stock := range stockCtx {
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
+		subStock = append(subStock, stock)
 	}
 
 	if len(subStock) == 0 {
@@ -114,7 +114,7 @@ func GetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, erro
 	close(stockCtx)
 
 	for stock := range stockCtx {
-		subStock = append(subStock, SubscribtionStockType{Stock: stock, Subscribtion: models.Subscribtion{}, SupportPercentage: float32(100), ResistancePercentage: float32(200)})
+		subStock = append(subStock, SubscribtionStockType{Stock: stock})
 	}
 
 	if len(subStock) == 0 {
@@ -122,11 +122,11 @@ func GetReportStockService(stocksReq []models.Subscribtion) (*bytes.Buffer, erro
 	}
 
 	stocksRecords := [][]string{
-		{"symbol", "name", "sector", "supportPercentage", "resistancePercentage", "supportPrice", "resistancePrice", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
+		{"symbol", "name", "sector", "openPrice", "closePrice", "highestPrice", "lowestPrice", "volume", "lastUpdate", "website", "description"},
 	}
 
 	for _, record := range subStock {
-		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(record.SupportPercentage), PercentageFormat(record.ResistancePercentage), strconv.Itoa(record.SupportPrice), strconv.Itoa(record.ResistancePrice), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
+		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
 
 	csvBuffer := new(bytes.Buffer)
