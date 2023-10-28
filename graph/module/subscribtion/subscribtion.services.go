@@ -98,25 +98,22 @@ func SubscribeMultipleStockService( stocks []*object.GetStockData, user *models.
 func GetSubscribtionStockService(user models.User) ([]*object.StockData, error) {
 	subscribtions := []models.Subscribtion{}
 	stocks := []*object.StockData{}
+	stocksReq := []*object.GetStockData{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
 	if err != nil {
 		return stocks, err
 	}
 
-	for _, sub := range subscribtions {
 
-		stock, err := stock.GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
-		if err != nil {
-			break
-		}
-
-		stocks = append(stocks, &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
-
+	for _, subs := range subscribtions {
+		stocksReq = append(stocksReq, &object.GetStockData{StockSymbol: subs.StockSymbol, SupportPrice: subs.SupportPrice, ResistancePrice: subs.ResistancePrice})
 	}
 
-	if len(stocks) == 0 {
-		return stocks, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	stocks, err = stock.GetMultipleStockService(stocksReq)
+
+	if err != nil {
+		return stocks, errors.New("Failed to get data from 'GetMultipleStockService'!")
 	}
 
 	return stocks, nil
@@ -125,26 +122,23 @@ func GetSubscribtionStockService(user models.User) ([]*object.StockData, error) 
 func GenerateStockReportService(user models.User) (*object.GenerateReportResponse, error) {
 	subscribtions := []models.Subscribtion{}
 	response := &object.GenerateReportResponse{}
+	subStock := []*object.StockData{}
+	stocksReq := []*object.GetStockData{}
 
 	err :=  utils.DB().Find(&subscribtions, "user_id = ?", user.ID).Error
 	if err != nil {
 		return response, err
 	}
 
-	subStock := []object.StockData{}
 
-	for _, sub := range subscribtions {
-
-		stock, err := stock.GetStockBySymbolService(sub.StockSymbol, sub.SupportPrice, sub.ResistancePrice)
-		if err != nil {
-			break
-		}
-		subStock = append(subStock, object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: stock.SupportPercentage, ResistancePercentage: stock.ResistancePercentage})
-
+	for _, subs := range subscribtions {
+		stocksReq = append(stocksReq, &object.GetStockData{StockSymbol: subs.StockSymbol, SupportPrice: subs.SupportPrice, ResistancePrice: subs.ResistancePrice})
 	}
 
-	if len(subStock) == 0 {
-		return response, errors.New("Failed to get data from 'GetStockBySymbolService'!")
+	subStock, err = stock.GetMultipleStockService(stocksReq)
+
+	if err != nil {
+		return response, errors.New("Failed to get data from 'GetMultipleStockService'!")
 	}
 
 	stocksRecords := [][]string{
@@ -154,8 +148,6 @@ func GenerateStockReportService(user models.User) (*object.GenerateReportRespons
 	for _, record := range subStock {
 		stocksRecords = append(stocksRecords, []string{record.Symbol, record.Name, record.Sector, PercentageFormat(float32(record.SupportPercentage)), PercentageFormat(float32(record.ResistancePercentage)), record.OpenPrice, record.ClosePrice, record.HighestPrice, record.LowestPrice, record.Volume, record.LastUpdate, record.Website, record.Description})
 	}
-
-	stocksRecords = append(stocksRecords, )
 
 	csvBuffer := new(bytes.Buffer)
 	writer := csv.NewWriter(csvBuffer)
