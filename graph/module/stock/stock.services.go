@@ -101,16 +101,32 @@ func GetStockBySymbolService( symbol string, supportPrice int, resistancePrice i
 	if err != nil {
 
 		// Get data from goapi
-		stock, err = GetStockInfoFromAPI(symbol, supportPrice, resistancePrice)
+		stock, err = GetStockInfoFromAPI(symbol)
 		if err != nil {
 			return stock, err
 		}
+
+		supportPercentage, resistancePercentage, err := GetSupportAndResistancePercentage(stock.ClosePrice, supportPrice, resistancePrice)
+		if err != nil {
+			return &object.StockData{}, err
+		}
+
+		stock.SupportPercentage = *supportPercentage
+		stock.ResistancePercentage = *resistancePercentage
 
 		err = CacheStock(symbol, stock)
 		return stock, err
 	}
 
 	err = json.Unmarshal([]byte(cachedStock), &stock)
+
+	supportPercentage, resistancePercentage, err := GetSupportAndResistancePercentage(stock.ClosePrice, supportPrice, resistancePrice)
+	if err != nil {
+		return &object.StockData{}, err
+	}
+
+	stock.SupportPercentage = *supportPercentage
+	stock.ResistancePercentage = *resistancePercentage
 
 	return stock, err
 }
@@ -127,10 +143,18 @@ func GetStockDetailService(symbol string, fromDate string, toDate string, suppor
 	if err != nil {
 
 		// Get data from goapi
-		stock, err = GetStockInfoFromAPI(symbol, supportPrice, resistancePrice)
+		stock, err = GetStockInfoFromAPI(symbol)
 		if err != nil {
 			return &object.StockDetail{}, err
 		}
+
+		supportPercentage, resistancePercentage, err := GetSupportAndResistancePercentage(stock.ClosePrice, supportPrice, resistancePrice)
+		if err != nil {
+			return &object.StockDetail{}, err
+		}
+
+		stock.SupportPercentage = *supportPercentage
+		stock.ResistancePercentage = *resistancePercentage
 
 		stockPrice, err = GetStockPriceFromAPI(symbol, fromDate, toDate)
 		if err != nil {
@@ -181,7 +205,7 @@ func GetReportStockService(stocksReq []*models.Subscribtion) (*bytes.Buffer, err
 	return csvBuffer, nil
 }
 
-func GetStockInfoFromAPI(symbol string, supportPrice int, resistancePrice int) (*object.StockData, error){
+func GetStockInfoFromAPI(symbol string) (*object.StockData, error){
 	fmt.Println("Fetching stock information with symbol: ", symbol, "to goapi.id")
 	stockMetaData := GoapiInformationResponseType{}
 
@@ -219,12 +243,7 @@ func GetStockInfoFromAPI(symbol string, supportPrice int, resistancePrice int) (
 	}
 
 	err = utils.DB().Where(models.Stock{Symbol: symbol}).Assign(stock).FirstOrCreate(&stock).Error
-
-	closePrice, err := strconv.Atoi(stock.ClosePrice)
-	if err != nil {
-		return &object.StockData{}, err
-	}
-	result := &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate, SupportPercentage: 100 - (float64(supportPrice) / float64(closePrice) * 100), ResistancePercentage: 100 - (float64(closePrice) / float64(resistancePrice) * 100)}
+	result := &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate}
 	
 	return result, err
 }
@@ -280,7 +299,21 @@ func CacheStockDetail(key string, stockDetail *object.StockDetail) error {
 	return err
 }
 
+func GetSupportAndResistancePercentage(closePriceStr string, supportPrice int, resistancePrice int) (*float64, *float64, error)  {
+	closePrice, err := strconv.Atoi(closePriceStr)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		supportPercentage := 100 - (float64(supportPrice) / float64(closePrice) * 100)
+		resistancePercentage := 100 - (float64(closePrice) / float64(resistancePrice) * 100)
+
+		return &supportPercentage, &resistancePercentage, nil
+}
+
 func PercentageFormat(value float32) string {
 	return strconv.FormatFloat(float64(value), 'f', 2, 64)
 }
+
+
 
