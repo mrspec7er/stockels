@@ -203,6 +203,76 @@ func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, err
 	return csvBuffer, nil
 }
 
+func GetAnalyticStock(symbol string, fromYear int) (*object.StockAnalytic, error){
+	stockAnalytic := &object.StockAnalytic{}
+	quarters := []*object.QuarterAnalytic{}
+	toYear := time.Now().Year()
+	
+	for i := fromYear; i <= toYear; i++ {
+		firstQuarter := []object.StockDetailPrice{}
+		secondQuarter := []object.StockDetailPrice{}
+		thirdQuarter := []object.StockDetailPrice{}
+		fourthQuarter := []object.StockDetailPrice{}
+
+		stockPrices, err := GetStockPriceFromAPI(symbol, strconv.Itoa(i) + "-01-01", strconv.Itoa(i) + "-12-31")
+		if err != nil {
+			return stockAnalytic, errors.New("Failed to get data from 'GetMultipleStockService'!")
+		}
+
+		for _, priceDetail := range stockPrices {
+			priceMounth := priceDetail.Date[5:7]
+			if (priceMounth == "01" || priceMounth == "02" || priceMounth == "03") {
+				firstQuarter = append(firstQuarter, *priceDetail)
+			}
+			if (priceMounth == "04" || priceMounth == "05" || priceMounth == "06") {
+				secondQuarter = append(secondQuarter, *priceDetail)
+			}
+			if (priceMounth == "07" || priceMounth == "08" || priceMounth == "09") {
+				thirdQuarter = append(thirdQuarter, *priceDetail)
+			}
+			if (priceMounth == "10" || priceMounth == "11" || priceMounth == "12") {
+				fourthQuarter = append(fourthQuarter, *priceDetail)
+			}
+		}
+
+		supportPriceFirstQuarter,  supportDateFirstQuarter, supportVolumeFirstQuarter, resistancePriceFirstQuarter, resistanceDateFirstQuarter, resistanceVolumeFirstQuarter:= getQuarterSupportAndResistance(firstQuarter)
+		supportPriceSecondQuarter, supportDateSecondQuarter, supportVolumeSecondQuarter, resistancePriceSecondQuarter, resistanceDateSecondQuarter, resistanceVolumeSecondQuarter  := getQuarterSupportAndResistance(secondQuarter)
+		supportPriceThirdQuarter,  supportDateThirdQuarter, supportVolumeThirdQuarter, resistancePriceThirdQuarter, resistanceDateThirdQuarter, resistanceVolumeThirdQuarter:= getQuarterSupportAndResistance(thirdQuarter)
+		supportPriceFourthQuarter, supportDateFourthQuarter, supportVolumeFourthQuarter, resistancePriceFourthQuarter, resistanceDateFourthQuarter, resistanceVolumeFourthQuarter  := getQuarterSupportAndResistance(fourthQuarter)
+
+		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceFirstQuarter, ResistancePrice: *resistancePriceFirstQuarter, Quarter: strconv.Itoa(i) + "-Q1", SupportDate: *supportDateFirstQuarter, SupportVolume: *supportVolumeFirstQuarter, ResistanceDate: *resistanceDateFirstQuarter, ResistanceVolume: *resistanceVolumeFirstQuarter})
+		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceSecondQuarter, ResistancePrice: *resistancePriceSecondQuarter, Quarter: strconv.Itoa(i) + "-Q2", SupportDate: *supportDateSecondQuarter, SupportVolume: *supportVolumeSecondQuarter, ResistanceDate: *resistanceDateSecondQuarter, ResistanceVolume: *resistanceVolumeSecondQuarter})
+		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceThirdQuarter, ResistancePrice: *resistancePriceThirdQuarter, Quarter: strconv.Itoa(i) + "-Q3", SupportDate: *supportDateThirdQuarter, SupportVolume: *supportVolumeThirdQuarter, ResistanceDate: *resistanceDateThirdQuarter, ResistanceVolume: *resistanceVolumeThirdQuarter})
+		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceFourthQuarter, ResistancePrice: *resistancePriceFourthQuarter, Quarter: strconv.Itoa(i) + "-Q4", SupportDate: *supportDateFourthQuarter, SupportVolume: *supportVolumeFourthQuarter, ResistanceDate: *resistanceDateFourthQuarter, ResistanceVolume: *resistanceVolumeFourthQuarter})
+	}
+
+	return &object.StockAnalytic{Quarters: quarters, AverageSupportPrice: 0, AverageResistancePrice: 0}, nil
+}
+
+func getQuarterSupportAndResistance(quarter []object.StockDetailPrice) (*float64, *string, *int, *float64, *string, *int)  {
+	var supportPrice float64 = 9999999999
+	var supportDate string
+	var supportVolume int
+	var resistancePrice float64
+	var resistanceDate string
+	var resistanceVolume int
+
+	for _, eachPrice := range quarter {
+		if perseSrtingToFloat(eachPrice.Close) < supportPrice {
+			supportPrice = perseSrtingToFloat(eachPrice.Close)
+			supportDate = eachPrice.Date
+			supportVolume = eachPrice.Volume
+		}
+
+		if perseSrtingToFloat(eachPrice.Close) > resistancePrice {
+			resistancePrice = perseSrtingToFloat(eachPrice.Close)
+			resistanceDate = eachPrice.Date
+			resistanceVolume = eachPrice.Volume
+		}
+	}
+	return &supportPrice, &supportDate, &supportVolume, &resistancePrice, &resistanceDate, &resistanceVolume
+}
+
 func AsyncGetStockService( symbol string, supportPrice int, resistancePrice int, stockCtx chan *object.StockData, wg *sync.WaitGroup) {
 	ctx := context.Background()
 	stock := &object.StockData{}
@@ -349,18 +419,27 @@ func CacheStockDetail(key string, stockDetail *object.StockDetail) error {
 
 func GetSupportAndResistancePercentage(closePriceStr string, supportPrice int, resistancePrice int) (*float64, *float64, error)  {
 	closePrice, err := strconv.Atoi(closePriceStr)
-		if err != nil {
-			return nil, nil, err
-		}
+	if err != nil {
+		return nil, nil, err
+	}
 
-		supportPercentage := 100 - (float64(supportPrice) / float64(closePrice) * 100)
-		resistancePercentage := 100 - (float64(closePrice) / float64(resistancePrice) * 100)
+	supportPercentage := 100 - (float64(supportPrice) / float64(closePrice) * 100)
+	resistancePercentage := 100 - (float64(closePrice) / float64(resistancePrice) * 100)
 
-		return &supportPercentage, &resistancePercentage, nil
+	return &supportPercentage, &resistancePercentage, nil
 }
 
 func PercentageFormat(value float32) string {
 	return strconv.FormatFloat(float64(value), 'f', 2, 64)
+}
+
+func perseSrtingToFloat(payload string) (float64) {
+	supportPrice, err := strconv.ParseFloat(payload, 64);
+
+	if err != nil {
+		panic(err.Error())
+	}
+	return supportPrice
 }
 
 

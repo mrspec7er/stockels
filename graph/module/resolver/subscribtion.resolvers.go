@@ -43,4 +43,3 @@ func (r *queryResolver) GenerateReportFile(ctx context.Context) (*object.Generat
 func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
