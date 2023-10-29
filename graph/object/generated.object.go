@@ -16,10 +16,26 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+type QuarterAnalytic struct {
+	Quarter          string  `json:"quarter"`
+	SupportPrice     float64 `json:"supportPrice"`
+	SupportDate      string  `json:"supportDate"`
+	SupportVolume    int     `json:"supportVolume"`
+	ResistancePrice  float64 `json:"resistancePrice"`
+	ResistanceDate   string  `json:"resistanceDate"`
+	ResistanceVolume int     `json:"resistanceVolume"`
+}
+
 type Register struct {
 	FullName string `json:"fullName"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type StockAnalytic struct {
+	AverageSupportPrice    float64            `json:"averageSupportPrice"`
+	AverageResistancePrice float64            `json:"averageResistancePrice"`
+	Quarters               []*QuarterAnalytic `json:"quarters"`
 }
 
 type StockData struct {

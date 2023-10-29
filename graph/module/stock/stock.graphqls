@@ -29,6 +29,22 @@ type StockDetail {
   price: [StockDetailPrice!]!
 }
 
+type StockAnalytic {
+  averageSupportPrice: Float!
+  averageResistancePrice: Float!
+  quarters: [QuarterAnalytic!]!
+}
+
+type QuarterAnalytic {
+  quarter: String!
+  supportPrice: Float!
+  supportDate: String!
+  supportVolume: Int!
+  resistancePrice: Float!
+  resistanceDate: String!
+  resistanceVolume: Int!
+}
+
 input GetStockData {
   stockSymbol: String!
   supportPrice: Int!
@@ -49,4 +65,5 @@ extend type Query {
     supportPrice: Int!
     resistancePrice: Int!
   ): StockDetail!
+  getStockAnalytic(symbol: String!, fromYear: Int!): StockAnalytic!
 }
