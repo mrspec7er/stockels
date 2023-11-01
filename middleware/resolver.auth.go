@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"stockels/models"
+	"stockels/app/models"
 	"stockels/utils"
 	"strings"
 

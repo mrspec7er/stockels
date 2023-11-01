@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"stockels/models"
+	"stockels/app/models"
 	"stockels/utils"
 
 	"github.com/joho/godotenv"

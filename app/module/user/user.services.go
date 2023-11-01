@@ -2,8 +2,8 @@ package user
 
 import (
 	"os"
+	"stockels/app/models"
 	"stockels/app/object"
-	"stockels/models"
 	"stockels/utils"
 	"time"
 
