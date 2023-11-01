@@ -36,27 +36,6 @@ type StockPriceType struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-type SubscribtionStockType struct {
-	models.Stock
-	models.Subscribtion
-	SupportPercentage float32 `json:"supportPercentage"`
-	ResistancePercentage float32 `json:"resistancePercentage"`
-}
-
-type StockDetailPriceType struct {
-	Date string `json:"date"`
-	Open string `json:"open"`
-	High string `json:"high"`
-	Low string `json:"low"`
-	Close string `json:"close"`
-	Volume int `json:"volume"`
-}
-
-type StockDetailType struct {
-	Info models.Stock `json:"info"`
-	Price []StockDetailPriceType `json:"price"`
-}
-
 type GoapiInformationResponseType struct {
 	Status string `json:"status"`
 	Message string `json:"message"`

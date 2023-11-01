@@ -13,62 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type StockDataType struct {
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Sector string `json:"sector"`
-	Logo string `json:"logo"`
-	Website string `json:"website"`
-}
-
-type StockPriceType struct {
-	Open string `json:"open"`
-	High string `json:"high"`
-	Low string `json:"low"`
-	Close string `json:"close"`
-	Volume string `json:"volume"`
-	UpdatedAt string `json:"updated_at"`
-}
-
-type SubscribtionStockType struct {
-	models.Stock
-	models.Subscribtion
-	SupportPercentage float32 `json:"supportPercentage"`
-	ResistancePercentage float32 `json:"resistancePercentage"`
-}
-
-type StockDetailPriceType struct {
-	Date string `json:"date"`
-	Open string `json:"open"`
-	High string `json:"high"`
-	Low string `json:"low"`
-	Close string `json:"close"`
-	Volume int `json:"volume"`
-}
-
-type StockDetailType struct {
-	Info models.Stock `json:"info"`
-	Price []StockDetailPriceType `json:"price"`
-}
-
-type GoapiInformationResponseType struct {
-	Status string `json:"status"`
-	Message string `json:"message"`
-	Data struct {
-		Result *StockDataType `json:"result"`
-		LastPrice *StockPriceType `json:"last_price"`
-	} `json:"data"`
-}
-
-type GoapiPriceResponseType struct {
-	Status string `json:"status"`
-	Message string `json:"message"`
-	Data struct {
-		Count int `json:"count"`
-		Results *[]StockDetailPriceType `json:"results"`
-	} `json:"data"`
-}
-
 func SubscribeMultipleStockService( stocks []*object.GetStockData, user *models.User) ([]*object.Subscribtion, error) {
 	subs := []*object.Subscribtion{}
 
