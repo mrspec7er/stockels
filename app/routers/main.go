@@ -3,8 +3,8 @@ package routers
 import (
 	"stockels/app"
 	"stockels/app/controller"
+	"stockels/app/middleware"
 	"stockels/app/resolver"
-	"stockels/middleware"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

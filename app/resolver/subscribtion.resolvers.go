@@ -7,9 +7,9 @@ package resolver
 import (
 	"context"
 	"stockels/app"
+	"stockels/app/middleware"
 	"stockels/app/module/subscribtion"
 	"stockels/app/object"
-	"stockels/middleware"
 )
 
 // StockSubscribes is the resolver for the stockSubscribes field.
