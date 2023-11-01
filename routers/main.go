@@ -2,8 +2,8 @@ package routers
 
 import (
 	"stockels/app"
-	"stockels/app/module/controller"
-	"stockels/app/module/resolver"
+	"stockels/app/controller"
+	"stockels/app/resolver"
 	"stockels/middleware"
 
 	"github.com/99designs/gqlgen/graphql/handler"
