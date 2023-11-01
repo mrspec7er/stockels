@@ -4,7 +4,7 @@ import (
 	"os"
 	"stockels/app/models"
 	"stockels/app/object"
-	"stockels/utils"
+	"stockels/app/utils"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"

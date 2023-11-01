@@ -7,7 +7,7 @@ import (
 	"stockels/app/models"
 	"stockels/app/module/stock"
 	"stockels/app/object"
-	"stockels/utils"
+	"stockels/app/utils"
 	"strconv"
 
 	"github.com/google/uuid"

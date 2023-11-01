@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"stockels/app/models"
-	"stockels/utils"
+	"stockels/app/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"

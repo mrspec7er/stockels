@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"stockels/app/models"
-	"stockels/utils"
+	"stockels/app/utils"
 
 	"github.com/joho/godotenv"
 )

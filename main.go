@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"stockels/app/routers"
-	"stockels/utils"
+	"stockels/app/utils"
 
 	"github.com/joho/godotenv"
 )
