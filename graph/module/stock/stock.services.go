@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"stockels/graph/object"
 	"stockels/models"
 	"stockels/utils"
@@ -204,19 +205,55 @@ func GetReportStockService(stocksReq []*object.GetStockData) (*bytes.Buffer, err
 }
 
 func GetAnalyticStock(symbol string, fromYear int) (*object.StockAnalytic, error){
-	stockAnalytic := &object.StockAnalytic{}
 	quarters := []*object.QuarterAnalytic{}
 	toYear := time.Now().Year()
+
+	quartersCtx := make(chan []*object.QuarterAnalytic, toYear - fromYear + 1)
+	wg := &sync.WaitGroup{}
+	wg.Add(toYear - fromYear + 1)
 	
 	for i := fromYear; i <= toYear; i++ {
+		go GetQuarterStockPrice(symbol, i, quartersCtx, wg)
+	}
+
+	wg.Wait()
+	close(quartersCtx)
+
+	for eactQuarter := range quartersCtx {
+		quarters = append(quarters, eactQuarter...)
+	}
+
+	if len(quarters) == 0 {
+		return nil, errors.New("Failed to get data from 'GetQuarterStockPrice'!")
+	}
+
+	totalSupportPrice := 0
+	totalResistancePrice := 0
+
+	for _, qtr := range quarters {
+		totalSupportPrice += int(qtr.SupportPrice)
+		totalResistancePrice += int(qtr.ResistancePrice)
+	}
+
+	sort.Slice(quarters, func(i, j int) bool {
+		return quarters[i].Quarter < quarters[j].Quarter
+	  })
+
+	return &object.StockAnalytic{Quarters: quarters, AverageSupportPrice: float64(totalSupportPrice / len(quarters)), AverageResistancePrice: float64(totalResistancePrice/ len(quarters))}, nil
+}
+
+func GetQuarterStockPrice(symbol string, year int, quartersCtx chan []*object.QuarterAnalytic, wg *sync.WaitGroup)  {
+	quarters := []*object.QuarterAnalytic{}
+	
 		firstQuarter := []*object.StockDetailPrice{}
 		secondQuarter := []*object.StockDetailPrice{}
 		thirdQuarter := []*object.StockDetailPrice{}
 		fourthQuarter := []*object.StockDetailPrice{}
 
-		stockPrices, err := GetStockPriceFromAPI(symbol, strconv.Itoa(i) + "-01-01", strconv.Itoa(i) + "-12-31")
+		stockPrices, err := GetStockPriceFromAPI(symbol, strconv.Itoa(year) + "-01-01", strconv.Itoa(year) + "-12-31")
 		if err != nil {
-			return stockAnalytic, errors.New("Failed to get data from 'GetMultipleStockService'!")
+			log.Println(err.Error())
+			return
 		}
 
 		for _, priceDetail := range stockPrices {
@@ -235,84 +272,22 @@ func GetAnalyticStock(symbol string, fromYear int) (*object.StockAnalytic, error
 			}
 		}
 
-		firstQuarterAnalytic := getQuarterSupportAndResistance(firstQuarter, strconv.Itoa(i) + "-Q1")
-		secondQuarterAnalytic:= getQuarterSupportAndResistance(secondQuarter, strconv.Itoa(i) + "-Q2")
-		thirdQuarterAnalytic:= getQuarterSupportAndResistance(thirdQuarter, strconv.Itoa(i) + "-Q3")
-		fourthQuarterAnalytic  := getQuarterSupportAndResistance(fourthQuarter, strconv.Itoa(i) + "-Q4")
+		firstQuarterAnalytic := GetQuarterSupportAndResistance(firstQuarter, strconv.Itoa(year) + "-Q1")
+		secondQuarterAnalytic:= GetQuarterSupportAndResistance(secondQuarter, strconv.Itoa(year) + "-Q2")
+		thirdQuarterAnalytic:= GetQuarterSupportAndResistance(thirdQuarter, strconv.Itoa(year) + "-Q3")
+		fourthQuarterAnalytic  := GetQuarterSupportAndResistance(fourthQuarter, strconv.Itoa(year) + "-Q4")
 
 		quarters = append(quarters, firstQuarterAnalytic)
 		quarters = append(quarters, secondQuarterAnalytic)
 		quarters = append(quarters, thirdQuarterAnalytic)
 		quarters = append(quarters, fourthQuarterAnalytic)
-
-	}
-
-	totalSupportPrice := 0
-	totalResistancePrice := 0
-
-	for _, qtr := range quarters {
-		totalSupportPrice += int(qtr.SupportPrice)
-		totalResistancePrice += int(qtr.ResistancePrice)
-	}
-
-	return &object.StockAnalytic{Quarters: quarters, AverageSupportPrice: float64(totalSupportPrice / len(quarters)), AverageResistancePrice: float64(totalResistancePrice/ len(quarters))}, nil
+	
+	quartersCtx <- quarters
+	wg.Done()
+	return
 }
 
-// func GetAnalyticStock(symbol string, fromYear int) (*object.StockAnalytic, error){
-// 	stockAnalytic := &object.StockAnalytic{}
-// 	quarters := []*object.QuarterAnalytic{}
-// 	toYear := time.Now().Year()
-	
-// 	for i := fromYear; i <= toYear; i++ {
-// 		firstQuarter := []*object.StockDetailPrice{}
-// 		secondQuarter := []*object.StockDetailPrice{}
-// 		thirdQuarter := []*object.StockDetailPrice{}
-// 		fourthQuarter := []*object.StockDetailPrice{}
-
-// 		stockPrices, err := GetStockPriceFromAPI(symbol, strconv.Itoa(i) + "-01-01", strconv.Itoa(i) + "-12-31")
-// 		if err != nil {
-// 			return stockAnalytic, errors.New("Failed to get data from 'GetMultipleStockService'!")
-// 		}
-
-// 		for _, priceDetail := range stockPrices {
-// 			priceMounth := priceDetail.Date[5:7]
-// 			if (priceMounth == "01" || priceMounth == "02" || priceMounth == "03") {
-// 				firstQuarter = append(firstQuarter, priceDetail)
-// 			}
-// 			if (priceMounth == "04" || priceMounth == "05" || priceMounth == "06") {
-// 				secondQuarter = append(secondQuarter, priceDetail)
-// 			}
-// 			if (priceMounth == "07" || priceMounth == "08" || priceMounth == "09") {
-// 				thirdQuarter = append(thirdQuarter, priceDetail)
-// 			}
-// 			if (priceMounth == "10" || priceMounth == "11" || priceMounth == "12") {
-// 				fourthQuarter = append(fourthQuarter, priceDetail)
-// 			}
-// 		}
-
-// 		supportPriceFirstQuarter,  supportDateFirstQuarter, supportVolumeFirstQuarter, resistancePriceFirstQuarter, resistanceDateFirstQuarter, resistanceVolumeFirstQuarter:= getQuarterSupportAndResistance(firstQuarter)
-// 		supportPriceSecondQuarter, supportDateSecondQuarter, supportVolumeSecondQuarter, resistancePriceSecondQuarter, resistanceDateSecondQuarter, resistanceVolumeSecondQuarter  := getQuarterSupportAndResistance(secondQuarter)
-// 		supportPriceThirdQuarter,  supportDateThirdQuarter, supportVolumeThirdQuarter, resistancePriceThirdQuarter, resistanceDateThirdQuarter, resistanceVolumeThirdQuarter:= getQuarterSupportAndResistance(thirdQuarter)
-// 		supportPriceFourthQuarter, supportDateFourthQuarter, supportVolumeFourthQuarter, resistancePriceFourthQuarter, resistanceDateFourthQuarter, resistanceVolumeFourthQuarter  := getQuarterSupportAndResistance(fourthQuarter)
-
-// 		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceFirstQuarter, ResistancePrice: *resistancePriceFirstQuarter, Quarter: strconv.Itoa(i) + "-Q1", SupportDate: *supportDateFirstQuarter, SupportVolume: *supportVolumeFirstQuarter, ResistanceDate: *resistanceDateFirstQuarter, ResistanceVolume: *resistanceVolumeFirstQuarter})
-// 		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceSecondQuarter, ResistancePrice: *resistancePriceSecondQuarter, Quarter: strconv.Itoa(i) + "-Q2", SupportDate: *supportDateSecondQuarter, SupportVolume: *supportVolumeSecondQuarter, ResistanceDate: *resistanceDateSecondQuarter, ResistanceVolume: *resistanceVolumeSecondQuarter})
-// 		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceThirdQuarter, ResistancePrice: *resistancePriceThirdQuarter, Quarter: strconv.Itoa(i) + "-Q3", SupportDate: *supportDateThirdQuarter, SupportVolume: *supportVolumeThirdQuarter, ResistanceDate: *resistanceDateThirdQuarter, ResistanceVolume: *resistanceVolumeThirdQuarter})
-// 		quarters = append(quarters, &object.QuarterAnalytic{SupportPrice: *supportPriceFourthQuarter, ResistancePrice: *resistancePriceFourthQuarter, Quarter: strconv.Itoa(i) + "-Q4", SupportDate: *supportDateFourthQuarter, SupportVolume: *supportVolumeFourthQuarter, ResistanceDate: *resistanceDateFourthQuarter, ResistanceVolume: *resistanceVolumeFourthQuarter})
-// 	}
-
-// 	totalSupportPrice := 0
-// 	totalResistancePrice := 0
-
-// 	for _, qtr := range quarters {
-// 		totalSupportPrice += int(qtr.SupportPrice)
-// 		totalResistancePrice += int(qtr.ResistancePrice)
-// 	}
-
-// 	return &object.StockAnalytic{Quarters: quarters, AverageSupportPrice: float64(totalSupportPrice / len(quarters)), AverageResistancePrice: float64(totalResistancePrice/ len(quarters))}, nil
-// }
-
-func getQuarterSupportAndResistance(quarter []*object.StockDetailPrice, quarterSymbol string) (*object.QuarterAnalytic)  {
+func GetQuarterSupportAndResistance(quarter []*object.StockDetailPrice, quarterSymbol string) (*object.QuarterAnalytic)  {
 	var supportPrice float64 = 9999999999
 	var supportDate string
 	var supportVolume int
