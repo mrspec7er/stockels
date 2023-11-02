@@ -1,0 +1,16 @@
+type Article {
+  source: Source!
+  author: String!
+  title: String!
+  url: String!
+  publishedAt: String!
+}
+
+type Source {
+  id: String!
+  name: String!
+}
+
+extend type Query {
+  getArticles: [Article!]!
+}

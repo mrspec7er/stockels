@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"stockels/app"
 	"stockels/app/module/stock"
 	"stockels/app/object"
 )
@@ -30,8 +29,3 @@ func (r *queryResolver) GetStockDetail(ctx context.Context, symbol string, fromD
 func (r *queryResolver) GetStockAnalytic(ctx context.Context, symbol string, fromYear int) (*object.StockAnalytic, error) {
 	return stock.GetAnalyticStock(symbol, fromYear)
 }
-
-// Query returns app.QueryResolver implementation.
-func (r *Resolver) Query() app.QueryResolver { return &queryResolver{r} }
-
-type queryResolver struct{ *Resolver }

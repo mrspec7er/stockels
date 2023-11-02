@@ -2,6 +2,14 @@
 
 package object
 
+type Article struct {
+	Source      *Source `json:"source"`
+	Author      string  `json:"author"`
+	Title       string  `json:"title"`
+	URL         string  `json:"url"`
+	PublishedAt string  `json:"publishedAt"`
+}
+
 type GenerateReportResponse struct {
 	ReportURL string `json:"reportUrl"`
 }
@@ -30,6 +38,11 @@ type Register struct {
 	FullName string `json:"fullName"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type Source struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type StockAnalytic struct {
