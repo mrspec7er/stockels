@@ -12,7 +12,7 @@ Key Feature:
 
 * Get improvement of company profit per quarter
 
-Infrastructure:
+Technical Feature:
 
 - Build in golang with Gin framework and GORM ORM
 - Using Redis to cache data from goapi.id which only has limit 1000 req/day
