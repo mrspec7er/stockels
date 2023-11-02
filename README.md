@@ -8,6 +8,7 @@ Key Feature:
 - Whitelist stock to get informed whenever you open the app
 - Generate report file to recap all your analytic data
 - Get support and resistance price of stock per quarter
+- Latest business news to support your analysis
 
 * Get improvement of company profit per quarter
 
