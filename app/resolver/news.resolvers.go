@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"stockels/app"
 	"stockels/app/module/news"
 	"stockels/app/object"
 )
@@ -15,8 +14,3 @@ import (
 func (r *queryResolver) GetArticles(ctx context.Context) ([]*object.Article, error) {
 	return news.GetNewsFromAPI()
 }
-
-// Query returns app.QueryResolver implementation.
-func (r *Resolver) Query() app.QueryResolver { return &queryResolver{r} }
-
-type queryResolver struct{ *Resolver }

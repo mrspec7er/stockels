@@ -1,0 +1,89 @@
+type Table {
+  title: String
+  description: String
+  value: String
+  change: String
+}
+
+type Results {
+  date: String
+  table: [Table]
+}
+
+type Financials {
+  title: String
+  results: [Results]
+}
+
+type Info {
+  label: String
+  value: String
+  link: String
+}
+
+type Description {
+  snippet: String
+  link: String
+  link_text: String
+}
+
+type About {
+  title: String
+  info: [Info]
+  description: Description
+}
+
+type Stats {
+  label: String
+  description: String
+  value: String
+}
+
+type Tags {
+  text: String
+  description: String
+}
+
+type KeyStats {
+  stats: [Stats]
+  tags: [Tags]
+}
+
+type KnowledgeGraph {
+  about: [About]
+  key_stats: KeyStats
+}
+
+type Graph {
+  price: Float
+  currency: String
+  date: String
+  volume: Float
+}
+
+type PriceMovement {
+  percentage: Float
+  value: Float
+  movement: String
+}
+
+type Summary {
+  title: String
+  stock: String
+  exchange: String
+  price: String
+  extracted_price: Float
+  currency: String
+  price_movement: PriceMovement
+}
+
+type Analytic {
+  financials: [Financials]
+  knowledge_graph: KnowledgeGraph
+  graph: [Graph]
+  summary: Summary
+}
+
+extend type Query {
+  getDetailAnalytic(symbol: String): Analytic!
+}
