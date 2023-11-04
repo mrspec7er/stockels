@@ -109,12 +109,6 @@ type Stats struct {
 	Value       *string `json:"value,omitempty"`
 }
 
-type StockAnalytic struct {
-	AverageSupportPrice    float64            `json:"averageSupportPrice"`
-	AverageResistancePrice float64            `json:"averageResistancePrice"`
-	Quarters               []*QuarterAnalytic `json:"quarters"`
-}
-
 type StockData struct {
 	Symbol               string  `json:"symbol"`
 	Name                 string  `json:"name"`
@@ -173,6 +167,12 @@ type Table struct {
 type Tags struct {
 	Text        *string `json:"text,omitempty"`
 	Description *string `json:"description,omitempty"`
+}
+
+type TechnicalAnalytic struct {
+	AverageSupportPrice    float64            `json:"averageSupportPrice"`
+	AverageResistancePrice float64            `json:"averageResistancePrice"`
+	Quarters               []*QuarterAnalytic `json:"quarters"`
 }
 
 type User struct {

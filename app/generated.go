@@ -133,16 +133,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GenerateReportFile func(childComplexity int) int
-		GetArticles        func(childComplexity int) int
-		GetDetailAnalytic  func(childComplexity int, symbol *string) int
-		GetStockAnalytic   func(childComplexity int, symbol string, fromYear int) int
-		GetStockBySymbol   func(childComplexity int, symbol string, supportPrice int, resistancePrice int) int
-		GetStockDetail     func(childComplexity int, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) int
-		GetStockSubscribe  func(childComplexity int) int
-		GetStocks          func(childComplexity int, stocks []*object.GetStockData) int
-		Login              func(childComplexity int, email string, password string) int
-		__resolve__service func(childComplexity int) int
+		GenerateReportFile     func(childComplexity int) int
+		GetArticles            func(childComplexity int) int
+		GetFundamentalAnalytic func(childComplexity int, symbol *string) int
+		GetStockBySymbol       func(childComplexity int, symbol string, supportPrice int, resistancePrice int) int
+		GetStockDetail         func(childComplexity int, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) int
+		GetStockSubscribe      func(childComplexity int) int
+		GetStocks              func(childComplexity int, stocks []*object.GetStockData) int
+		GetTechnicalAnalytic   func(childComplexity int, symbol string, fromYear int) int
+		Login                  func(childComplexity int, email string, password string) int
+		__resolve__service     func(childComplexity int) int
 	}
 
 	Results struct {
@@ -159,12 +159,6 @@ type ComplexityRoot struct {
 		Description func(childComplexity int) int
 		Label       func(childComplexity int) int
 		Value       func(childComplexity int) int
-	}
-
-	StockAnalytic struct {
-		AverageResistancePrice func(childComplexity int) int
-		AverageSupportPrice    func(childComplexity int) int
-		Quarters               func(childComplexity int) int
 	}
 
 	StockData struct {
@@ -227,6 +221,12 @@ type ComplexityRoot struct {
 		Text        func(childComplexity int) int
 	}
 
+	TechnicalAnalytic struct {
+		AverageResistancePrice func(childComplexity int) int
+		AverageSupportPrice    func(childComplexity int) int
+		Quarters               func(childComplexity int) int
+	}
+
 	User struct {
 		CreatedAt  func(childComplexity int) int
 		DeletedAt  func(childComplexity int) int
@@ -248,12 +248,12 @@ type MutationResolver interface {
 	Register(ctx context.Context, payload *object.Register) (*object.User, error)
 }
 type QueryResolver interface {
-	GetDetailAnalytic(ctx context.Context, symbol *string) (*object.Analytic, error)
+	GetFundamentalAnalytic(ctx context.Context, symbol *string) (*object.Analytic, error)
+	GetTechnicalAnalytic(ctx context.Context, symbol string, fromYear int) (*object.TechnicalAnalytic, error)
 	GetArticles(ctx context.Context) ([]*object.Article, error)
 	GetStocks(ctx context.Context, stocks []*object.GetStockData) ([]*object.StockData, error)
 	GetStockBySymbol(ctx context.Context, symbol string, supportPrice int, resistancePrice int) (*object.StockData, error)
 	GetStockDetail(ctx context.Context, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) (*object.StockDetail, error)
-	GetStockAnalytic(ctx context.Context, symbol string, fromYear int) (*object.StockAnalytic, error)
 	GetStockSubscribe(ctx context.Context) ([]*object.StockData, error)
 	GenerateReportFile(ctx context.Context) (*object.GenerateReportResponse, error)
 	Login(ctx context.Context, email string, password string) (*object.LoginResponse, error)
@@ -596,29 +596,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetArticles(childComplexity), true
 
-	case "Query.getDetailAnalytic":
-		if e.complexity.Query.GetDetailAnalytic == nil {
+	case "Query.getFundamentalAnalytic":
+		if e.complexity.Query.GetFundamentalAnalytic == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getDetailAnalytic_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getFundamentalAnalytic_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDetailAnalytic(childComplexity, args["symbol"].(*string)), true
-
-	case "Query.getStockAnalytic":
-		if e.complexity.Query.GetStockAnalytic == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getStockAnalytic_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetStockAnalytic(childComplexity, args["symbol"].(string), args["fromYear"].(int)), true
+		return e.complexity.Query.GetFundamentalAnalytic(childComplexity, args["symbol"].(*string)), true
 
 	case "Query.getStockBySymbol":
 		if e.complexity.Query.GetStockBySymbol == nil {
@@ -662,6 +650,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetStocks(childComplexity, args["stocks"].([]*object.GetStockData)), true
+
+	case "Query.getTechnicalAnalytic":
+		if e.complexity.Query.GetTechnicalAnalytic == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTechnicalAnalytic_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTechnicalAnalytic(childComplexity, args["symbol"].(string), args["fromYear"].(int)), true
 
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
@@ -730,27 +730,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Stats.Value(childComplexity), true
-
-	case "StockAnalytic.averageResistancePrice":
-		if e.complexity.StockAnalytic.AverageResistancePrice == nil {
-			break
-		}
-
-		return e.complexity.StockAnalytic.AverageResistancePrice(childComplexity), true
-
-	case "StockAnalytic.averageSupportPrice":
-		if e.complexity.StockAnalytic.AverageSupportPrice == nil {
-			break
-		}
-
-		return e.complexity.StockAnalytic.AverageSupportPrice(childComplexity), true
-
-	case "StockAnalytic.quarters":
-		if e.complexity.StockAnalytic.Quarters == nil {
-			break
-		}
-
-		return e.complexity.StockAnalytic.Quarters(childComplexity), true
 
 	case "StockData.closePrice":
 		if e.complexity.StockData.ClosePrice == nil {
@@ -1025,6 +1004,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tags.Text(childComplexity), true
 
+	case "TechnicalAnalytic.averageResistancePrice":
+		if e.complexity.TechnicalAnalytic.AverageResistancePrice == nil {
+			break
+		}
+
+		return e.complexity.TechnicalAnalytic.AverageResistancePrice(childComplexity), true
+
+	case "TechnicalAnalytic.averageSupportPrice":
+		if e.complexity.TechnicalAnalytic.AverageSupportPrice == nil {
+			break
+		}
+
+		return e.complexity.TechnicalAnalytic.AverageSupportPrice(childComplexity), true
+
+	case "TechnicalAnalytic.quarters":
+		if e.complexity.TechnicalAnalytic.Quarters == nil {
+			break
+		}
+
+		return e.complexity.TechnicalAnalytic.Quarters(childComplexity), true
+
 	case "User.createdAt":
 		if e.complexity.User.CreatedAt == nil {
 			break
@@ -1281,7 +1281,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getDetailAnalytic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getFundamentalAnalytic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
@@ -1293,30 +1293,6 @@ func (ec *executionContext) field_Query_getDetailAnalytic_args(ctx context.Conte
 		}
 	}
 	args["symbol"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getStockAnalytic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["symbol"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("symbol"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["symbol"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["fromYear"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromYear"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["fromYear"] = arg1
 	return args, nil
 }
 
@@ -1416,6 +1392,30 @@ func (ec *executionContext) field_Query_getStocks_args(ctx context.Context, rawA
 		}
 	}
 	args["stocks"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTechnicalAnalytic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["symbol"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("symbol"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["symbol"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["fromYear"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromYear"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["fromYear"] = arg1
 	return args, nil
 }
 
@@ -3395,8 +3395,8 @@ func (ec *executionContext) fieldContext_QuarterAnalytic_resistanceVolume(ctx co
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getDetailAnalytic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getDetailAnalytic(ctx, field)
+func (ec *executionContext) _Query_getFundamentalAnalytic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getFundamentalAnalytic(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3409,7 +3409,7 @@ func (ec *executionContext) _Query_getDetailAnalytic(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDetailAnalytic(rctx, fc.Args["symbol"].(*string))
+		return ec.resolvers.Query().GetFundamentalAnalytic(rctx, fc.Args["symbol"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3426,7 +3426,7 @@ func (ec *executionContext) _Query_getDetailAnalytic(ctx context.Context, field 
 	return ec.marshalNAnalytic2ᚖstockelsᚋappᚋobjectᚐAnalytic(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getDetailAnalytic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getFundamentalAnalytic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3453,7 +3453,70 @@ func (ec *executionContext) fieldContext_Query_getDetailAnalytic(ctx context.Con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getDetailAnalytic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_getFundamentalAnalytic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getTechnicalAnalytic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTechnicalAnalytic(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTechnicalAnalytic(rctx, fc.Args["symbol"].(string), fc.Args["fromYear"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*object.TechnicalAnalytic)
+	fc.Result = res
+	return ec.marshalNTechnicalAnalytic2ᚖstockelsᚋappᚋobjectᚐTechnicalAnalytic(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTechnicalAnalytic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "averageSupportPrice":
+				return ec.fieldContext_TechnicalAnalytic_averageSupportPrice(ctx, field)
+			case "averageResistancePrice":
+				return ec.fieldContext_TechnicalAnalytic_averageResistancePrice(ctx, field)
+			case "quarters":
+				return ec.fieldContext_TechnicalAnalytic_quarters(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TechnicalAnalytic", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getTechnicalAnalytic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3741,69 +3804,6 @@ func (ec *executionContext) fieldContext_Query_getStockDetail(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getStockDetail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getStockAnalytic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getStockAnalytic(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetStockAnalytic(rctx, fc.Args["symbol"].(string), fc.Args["fromYear"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*object.StockAnalytic)
-	fc.Result = res
-	return ec.marshalNStockAnalytic2ᚖstockelsᚋappᚋobjectᚐStockAnalytic(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getStockAnalytic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "averageSupportPrice":
-				return ec.fieldContext_StockAnalytic_averageSupportPrice(ctx, field)
-			case "averageResistancePrice":
-				return ec.fieldContext_StockAnalytic_averageResistancePrice(ctx, field)
-			case "quarters":
-				return ec.fieldContext_StockAnalytic_quarters(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type StockAnalytic", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getStockAnalytic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4466,154 +4466,6 @@ func (ec *executionContext) fieldContext_Stats_value(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StockAnalytic_averageSupportPrice(ctx context.Context, field graphql.CollectedField, obj *object.StockAnalytic) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StockAnalytic_averageSupportPrice(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AverageSupportPrice, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StockAnalytic_averageSupportPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StockAnalytic",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StockAnalytic_averageResistancePrice(ctx context.Context, field graphql.CollectedField, obj *object.StockAnalytic) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StockAnalytic_averageResistancePrice(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AverageResistancePrice, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StockAnalytic_averageResistancePrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StockAnalytic",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StockAnalytic_quarters(ctx context.Context, field graphql.CollectedField, obj *object.StockAnalytic) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StockAnalytic_quarters(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Quarters, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*object.QuarterAnalytic)
-	fc.Result = res
-	return ec.marshalNQuarterAnalytic2ᚕᚖstockelsᚋappᚋobjectᚐQuarterAnalyticᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StockAnalytic_quarters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StockAnalytic",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "quarter":
-				return ec.fieldContext_QuarterAnalytic_quarter(ctx, field)
-			case "supportPrice":
-				return ec.fieldContext_QuarterAnalytic_supportPrice(ctx, field)
-			case "supportDate":
-				return ec.fieldContext_QuarterAnalytic_supportDate(ctx, field)
-			case "supportVolume":
-				return ec.fieldContext_QuarterAnalytic_supportVolume(ctx, field)
-			case "resistancePrice":
-				return ec.fieldContext_QuarterAnalytic_resistancePrice(ctx, field)
-			case "resistanceDate":
-				return ec.fieldContext_QuarterAnalytic_resistanceDate(ctx, field)
-			case "resistanceVolume":
-				return ec.fieldContext_QuarterAnalytic_resistanceVolume(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type QuarterAnalytic", field.Name)
 		},
 	}
 	return fc, nil
@@ -6343,6 +6195,154 @@ func (ec *executionContext) fieldContext_Tags_description(ctx context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TechnicalAnalytic_averageSupportPrice(ctx context.Context, field graphql.CollectedField, obj *object.TechnicalAnalytic) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TechnicalAnalytic_averageSupportPrice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AverageSupportPrice, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TechnicalAnalytic_averageSupportPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TechnicalAnalytic",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TechnicalAnalytic_averageResistancePrice(ctx context.Context, field graphql.CollectedField, obj *object.TechnicalAnalytic) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TechnicalAnalytic_averageResistancePrice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AverageResistancePrice, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TechnicalAnalytic_averageResistancePrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TechnicalAnalytic",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TechnicalAnalytic_quarters(ctx context.Context, field graphql.CollectedField, obj *object.TechnicalAnalytic) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TechnicalAnalytic_quarters(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Quarters, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*object.QuarterAnalytic)
+	fc.Result = res
+	return ec.marshalNQuarterAnalytic2ᚕᚖstockelsᚋappᚋobjectᚐQuarterAnalyticᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TechnicalAnalytic_quarters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TechnicalAnalytic",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "quarter":
+				return ec.fieldContext_QuarterAnalytic_quarter(ctx, field)
+			case "supportPrice":
+				return ec.fieldContext_QuarterAnalytic_supportPrice(ctx, field)
+			case "supportDate":
+				return ec.fieldContext_QuarterAnalytic_supportDate(ctx, field)
+			case "supportVolume":
+				return ec.fieldContext_QuarterAnalytic_supportVolume(ctx, field)
+			case "resistancePrice":
+				return ec.fieldContext_QuarterAnalytic_resistancePrice(ctx, field)
+			case "resistanceDate":
+				return ec.fieldContext_QuarterAnalytic_resistanceDate(ctx, field)
+			case "resistanceVolume":
+				return ec.fieldContext_QuarterAnalytic_resistanceVolume(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QuarterAnalytic", field.Name)
 		},
 	}
 	return fc, nil
@@ -9252,7 +9252,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getDetailAnalytic":
+		case "getFundamentalAnalytic":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9261,7 +9261,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getDetailAnalytic(ctx, field)
+				res = ec._Query_getFundamentalAnalytic(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getTechnicalAnalytic":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTechnicalAnalytic(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9350,28 +9372,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getStockDetail(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getStockAnalytic":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getStockAnalytic(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9602,55 +9602,6 @@ func (ec *executionContext) _Stats(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Stats_description(ctx, field, obj)
 		case "value":
 			out.Values[i] = ec._Stats_value(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var stockAnalyticImplementors = []string{"StockAnalytic"}
-
-func (ec *executionContext) _StockAnalytic(ctx context.Context, sel ast.SelectionSet, obj *object.StockAnalytic) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, stockAnalyticImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("StockAnalytic")
-		case "averageSupportPrice":
-			out.Values[i] = ec._StockAnalytic_averageSupportPrice(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "averageResistancePrice":
-			out.Values[i] = ec._StockAnalytic_averageResistancePrice(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "quarters":
-			out.Values[i] = ec._StockAnalytic_quarters(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10045,6 +9996,55 @@ func (ec *executionContext) _Tags(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Tags_text(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Tags_description(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var technicalAnalyticImplementors = []string{"TechnicalAnalytic"}
+
+func (ec *executionContext) _TechnicalAnalytic(ctx context.Context, sel ast.SelectionSet, obj *object.TechnicalAnalytic) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, technicalAnalyticImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TechnicalAnalytic")
+		case "averageSupportPrice":
+			out.Values[i] = ec._TechnicalAnalytic_averageSupportPrice(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "averageResistancePrice":
+			out.Values[i] = ec._TechnicalAnalytic_averageResistancePrice(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "quarters":
+			out.Values[i] = ec._TechnicalAnalytic_quarters(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10728,20 +10728,6 @@ func (ec *executionContext) marshalNSource2ᚖstockelsᚋappᚋobjectᚐSource(c
 	return ec._Source(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNStockAnalytic2stockelsᚋappᚋobjectᚐStockAnalytic(ctx context.Context, sel ast.SelectionSet, v object.StockAnalytic) graphql.Marshaler {
-	return ec._StockAnalytic(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNStockAnalytic2ᚖstockelsᚋappᚋobjectᚐStockAnalytic(ctx context.Context, sel ast.SelectionSet, v *object.StockAnalytic) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._StockAnalytic(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNStockData2stockelsᚋappᚋobjectᚐStockData(ctx context.Context, sel ast.SelectionSet, v object.StockData) graphql.Marshaler {
 	return ec._StockData(ctx, sel, &v)
 }
@@ -10919,6 +10905,20 @@ func (ec *executionContext) marshalNSubscribtion2ᚕᚖstockelsᚋappᚋobject�
 	wg.Wait()
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTechnicalAnalytic2stockelsᚋappᚋobjectᚐTechnicalAnalytic(ctx context.Context, sel ast.SelectionSet, v object.TechnicalAnalytic) graphql.Marshaler {
+	return ec._TechnicalAnalytic(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTechnicalAnalytic2ᚖstockelsᚋappᚋobjectᚐTechnicalAnalytic(ctx context.Context, sel ast.SelectionSet, v *object.TechnicalAnalytic) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TechnicalAnalytic(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUser2stockelsᚋappᚋobjectᚐUser(ctx context.Context, sel ast.SelectionSet, v object.User) graphql.Marshaler {

@@ -24,8 +24,3 @@ func (r *queryResolver) GetStockBySymbol(ctx context.Context, symbol string, sup
 func (r *queryResolver) GetStockDetail(ctx context.Context, symbol string, fromDate string, toDate string, supportPrice int, resistancePrice int) (*object.StockDetail, error) {
 	return stock.GetStockDetailService(symbol, fromDate, toDate, supportPrice, resistancePrice)
 }
-
-// GetStockAnalytic is the resolver for the getStockAnalytic field.
-func (r *queryResolver) GetStockAnalytic(ctx context.Context, symbol string, fromYear int) (*object.StockAnalytic, error) {
-	return stock.GetAnalyticStock(symbol, fromYear)
-}

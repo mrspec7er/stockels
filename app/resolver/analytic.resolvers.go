@@ -11,12 +11,18 @@ import (
 	"stockels/app/object"
 )
 
-// GetDetailAnalytic is the resolver for the getDetailAnalytic field.
-func (r *queryResolver) GetDetailAnalytic(ctx context.Context, symbol *string) (*object.Analytic, error) {
+// GetFundamentalAnalytic is the resolver for the getFundamentalAnalytic field.
+func (r *queryResolver) GetFundamentalAnalytic(ctx context.Context, symbol *string) (*object.Analytic, error) {
 	return analytic.GetAnalyticFromAPI(*symbol)
+}
+
+// GetTechnicalAnalytic is the resolver for the getTechnicalAnalytic field.
+func (r *queryResolver) GetTechnicalAnalytic(ctx context.Context, symbol string, fromYear int) (*object.TechnicalAnalytic, error) {
+	return analytic.GetAnalyticStock(symbol, fromYear)
 }
 
 // Query returns app.QueryResolver implementation.
 func (r *Resolver) Query() app.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
+

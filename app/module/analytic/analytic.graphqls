@@ -84,6 +84,23 @@ type Analytic {
   summary: Summary
 }
 
+type TechnicalAnalytic {
+  averageSupportPrice: Float!
+  averageResistancePrice: Float!
+  quarters: [QuarterAnalytic!]!
+}
+
+type QuarterAnalytic {
+  quarter: String!
+  supportPrice: Float!
+  supportDate: String!
+  supportVolume: Int!
+  resistancePrice: Float!
+  resistanceDate: String!
+  resistanceVolume: Int!
+}
+
 extend type Query {
-  getDetailAnalytic(symbol: String): Analytic!
+  getFundamentalAnalytic(symbol: String): Analytic!
+  getTechnicalAnalytic(symbol: String!, fromYear: Int!): TechnicalAnalytic!
 }
