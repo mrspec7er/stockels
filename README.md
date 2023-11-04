@@ -7,7 +7,8 @@ Key Feature:
 - Stock information with parameter that can adjust by your self
 - Whitelist stock to get informed whenever you open the app
 - Generate report file to recap all your analytic data
-- Get support and resistance price of stock per quarter
+- Get technical analytic for each stock to determine support and resistance price per quarter
+- Get current fundamental analytic data for every stock on IDX
 - Latest business news to support your analysis
 
 * Get improvement of company profit per quarter
