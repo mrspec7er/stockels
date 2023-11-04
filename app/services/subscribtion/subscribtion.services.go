@@ -5,8 +5,8 @@ import (
 	"encoding/csv"
 	"errors"
 	"stockels/app/models"
-	"stockels/app/module/stock"
 	"stockels/app/object"
+	"stockels/app/services/stock"
 	"stockels/app/utils"
 	"strconv"
 

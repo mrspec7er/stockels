@@ -1,4 +1,4 @@
-package resolver
+package handlers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -7,14 +7,14 @@ package resolver
 import (
 	"context"
 	"stockels/app"
-	"stockels/app/middleware"
-	"stockels/app/module/subscribtion"
+	"stockels/app/middlewares"
 	"stockels/app/object"
+	"stockels/app/services/subscribtion"
 )
 
 // StockSubscribes is the resolver for the stockSubscribes field.
 func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*object.GetStockData) ([]*object.Subscribtion, error) {
-	user, err := middleware.GetAuthContextMiddleware(ctx)
+	user, err := middlewares.GetAuthContextMiddleware(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (r *mutationResolver) StockSubscribes(ctx context.Context, stocks []*object
 
 // GetStockSubscribe is the resolver for the getStockSubscribe field.
 func (r *queryResolver) GetStockSubscribe(ctx context.Context) ([]*object.StockData, error) {
-	user, err := middleware.GetAuthContextMiddleware(ctx)
+	user, err := middlewares.GetAuthContextMiddleware(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (r *queryResolver) GetStockSubscribe(ctx context.Context) ([]*object.StockD
 
 // GenerateReportFile is the resolver for the generateReportFile field.
 func (r *queryResolver) GenerateReportFile(ctx context.Context) (*object.GenerateReportResponse, error) {
-	user, err := middleware.GetAuthContextMiddleware(ctx)
+	user, err := middlewares.GetAuthContextMiddleware(ctx)
 	if err != nil {
 		return nil, err
 	}

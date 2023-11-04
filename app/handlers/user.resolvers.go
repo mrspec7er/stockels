@@ -1,4 +1,4 @@
-package resolver
+package handlers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -6,8 +6,8 @@ package resolver
 
 import (
 	"context"
-	"stockels/app/module/user"
 	"stockels/app/object"
+	"stockels/app/services/user"
 )
 
 // Register is the resolver for the register field.

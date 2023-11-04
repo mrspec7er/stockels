@@ -2,9 +2,8 @@ package routers
 
 import (
 	"stockels/app"
-	"stockels/app/controller"
-	"stockels/app/middleware"
-	"stockels/app/resolver"
+	"stockels/app/handlers"
+	"stockels/app/middlewares"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -14,7 +13,7 @@ import (
 func graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.NewDefaultServer(app.NewExecutableSchema(app.Config{Resolvers: &resolver.Resolver{}}))
+	h := handler.NewDefaultServer(app.NewExecutableSchema(app.Config{Resolvers: &handlers.Resolver{}}))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -33,10 +32,10 @@ func playgroundHandler() gin.HandlerFunc {
 func Config()  {
 	router := gin.Default()
 
-	router.Use(middleware.AuthContextMiddleware())
+	router.Use(middlewares.AuthContextMiddleware())
 	router.POST("/query", graphqlHandler())
 	router.GET("/", playgroundHandler())
-	controller.Routes(router)
+	handlers.Routes(router)
 
 	router.Run()
 }

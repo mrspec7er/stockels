@@ -1,4 +1,4 @@
-package resolver
+package handlers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -7,8 +7,8 @@ package resolver
 import (
 	"context"
 	"stockels/app"
-	"stockels/app/module/analytic"
 	"stockels/app/object"
+	"stockels/app/services/analytic"
 )
 
 // GetFundamentalAnalytic is the resolver for the getFundamentalAnalytic field.
@@ -25,4 +25,3 @@ func (r *queryResolver) GetTechnicalAnalytic(ctx context.Context, symbol string,
 func (r *Resolver) Query() app.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-

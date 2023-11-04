@@ -1194,7 +1194,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "module/analytic/analytic.graphqls" "module/news/news.graphqls" "module/stock/stock.graphqls" "module/subscribtion/subscribtion.graphqls" "module/user/user.graphqls"
+//go:embed "handlers/analytic.graphqls" "handlers/news.graphqls" "handlers/stock.graphqls" "handlers/subscribtion.graphqls" "handlers/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1206,11 +1206,11 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
-	{Name: "module/analytic/analytic.graphqls", Input: sourceData("module/analytic/analytic.graphqls"), BuiltIn: false},
-	{Name: "module/news/news.graphqls", Input: sourceData("module/news/news.graphqls"), BuiltIn: false},
-	{Name: "module/stock/stock.graphqls", Input: sourceData("module/stock/stock.graphqls"), BuiltIn: false},
-	{Name: "module/subscribtion/subscribtion.graphqls", Input: sourceData("module/subscribtion/subscribtion.graphqls"), BuiltIn: false},
-	{Name: "module/user/user.graphqls", Input: sourceData("module/user/user.graphqls"), BuiltIn: false},
+	{Name: "handlers/analytic.graphqls", Input: sourceData("handlers/analytic.graphqls"), BuiltIn: false},
+	{Name: "handlers/news.graphqls", Input: sourceData("handlers/news.graphqls"), BuiltIn: false},
+	{Name: "handlers/stock.graphqls", Input: sourceData("handlers/stock.graphqls"), BuiltIn: false},
+	{Name: "handlers/subscribtion.graphqls", Input: sourceData("handlers/subscribtion.graphqls"), BuiltIn: false},
+	{Name: "handlers/user.graphqls", Input: sourceData("handlers/user.graphqls"), BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
 	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
