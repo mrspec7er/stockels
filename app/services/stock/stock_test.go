@@ -20,6 +20,16 @@ func TestGetStockFromAPI(t *testing.T)  {
 	if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(stocks)) {
 		t.Errorf(err.Error())
 	}
+}
+
+func TestGetStockDetailFromAPI(t *testing.T)  {
+	stockDetail := []*object.StockDetailPrice{}
+
+	result, err := stock.GetStockPriceFromAPI("BBNI", "2023-05-11", "2023-11-2")
+
+	if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(stockDetail)) {
+		t.Errorf(err.Error())
+	}
 
 }
 
