@@ -19,5 +19,7 @@ func init() {
 func main()  {
 	utils.DB()
 	utils.Cache()
-	routers.Config()
+	app := routers.Config()
+
+	app.Run()
 }

@@ -29,7 +29,7 @@ func playgroundHandler() gin.HandlerFunc {
 	}
 }
 
-func Config()  {
+func Config() *gin.Engine {
 	router := gin.Default()
 
 	router.Use(middlewares.AuthContextMiddleware())
@@ -37,5 +37,5 @@ func Config()  {
 	router.GET("/", playgroundHandler())
 	handlers.Routes(router)
 
-	router.Run()
+	return router
 }
