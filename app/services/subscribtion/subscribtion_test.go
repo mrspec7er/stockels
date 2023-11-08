@@ -13,7 +13,7 @@ func init()  {
 	testings.SetupRouters("../../../.env")
 }
 
-func TestAnalyticServices(t *testing.T)  {
+func TestSubscribtionServices(t *testing.T)  {
 	t.Run("should create new stock subscribtion", func(t *testing.T) {
 
 		user := &models.User{ID: 1, FullName: "Mr Spec7er", Email: "mrspec7er@gmail.com", IsVerified: false}
