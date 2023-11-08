@@ -14,11 +14,11 @@ import (
 func TestStockResolvers(t *testing.T)  {
 	SetupRouters("../.env")
 	c := client.New(handler.NewDefaultServer(app.NewExecutableSchema(app.Config{Resolvers: &handlers.Resolver{}})))
-	var stockDetail struct {
-		GetStockDetail *object.StockDetail
-	}
-
-	t.Run("should generate report files", func(t *testing.T) {
+	
+	t.Run("should return stock info", func(t *testing.T) {
+		var stockDetail struct {
+			GetStockDetail *object.StockDetail
+		}
 		c.MustPost(`query($supportPrice: Int!, $resistancePrice: Int!) {
 			getStockDetail(
 				symbol: "ASII",
@@ -33,6 +33,28 @@ func TestStockResolvers(t *testing.T)  {
 		}`, &stockDetail, client.Var("supportPrice", 5300), client.Var("resistancePrice", 7200))
 		
 		assert.Equal(t, "ASII", stockDetail.GetStockDetail.Info.Symbol)
+	});
+
+	t.Run("should return array of stock info", func(t *testing.T) {
+		var stocks struct {
+			GetStocks []*object.StockData
+		}
+		c.MustPost(`query($supportPrice: Int!, $resistancePrice: Int!) {
+			getStocks(
+				stocks: [
+						{stockSymbol: "ASII", supportPrice: $supportPrice, resistancePrice: $resistancePrice}, 
+					]
+			  ) {
+				symbol
+				name
+				closePrice
+				supportPercentage
+				resistancePercentage,
+					description
+			  }
+		}`, &stocks, client.Var("supportPrice", 5300), client.Var("resistancePrice", 7200))
+		
+		assert.Equal(t, "ASII", stocks.GetStocks[0].Symbol)
 	});
 
 }
