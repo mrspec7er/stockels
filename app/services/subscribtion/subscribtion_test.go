@@ -18,11 +18,10 @@ func TestSubscribtionServices(t *testing.T)  {
 
 		user := &models.User{ID: 1, FullName: "Mr Spec7er", Email: "mrspec7er@gmail.com", IsVerified: false}
 		stocks := []*object.GetStockData{{StockSymbol: "BMRI", SupportPrice: 5450, ResistancePrice: 6700}}
-		subscribtions := []*object.Subscribtion{}
 
 		result, err := subscribtion.SubscribeMultipleStockService(stocks, user)
 	
-		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(subscribtions)) {
+		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf([]*object.Subscribtion{})) {
 			t.Errorf(err.Error())
 		}
 	})

@@ -14,21 +14,19 @@ func init()  {
 
 func TestAnalyticServices(t *testing.T)  {
 	t.Run("should return stock fundamental analytic", func(t *testing.T) {
-		stockAnalytic := &object.Analytic{}
 
 		result, err := analytic.GetAnalyticFromAPI("TLKM")
 	
-		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(stockAnalytic)) {
+		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(&object.Analytic{})) {
 			t.Errorf(err.Error())
 		}
 	})
 
 	t.Run("should return stock technical analytic", func(t *testing.T) {
-		stockTechnicalAnalytic := &object.TechnicalAnalytic{}
 
 		result, err := analytic.GetAnalyticStock("ASII", 2021)
 	
-		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(stockTechnicalAnalytic)) {
+		if err != nil || (reflect.TypeOf(result) != reflect.TypeOf(&object.TechnicalAnalytic{})) {
 			t.Errorf(err.Error())
 		}
 	})
