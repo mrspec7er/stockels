@@ -22,9 +22,10 @@ func SubscribeMultipleStockService( stocks []*object.GetStockData, user *models.
 			UserID: user.ID,
 			SupportPrice: sub.SupportPrice,
 			ResistancePrice: sub.ResistancePrice,
+			Stock: &models.Stock{Symbol: sub.StockSymbol},
 		}
 		// err := utils.DB().Create(&subscribtion).Error
-		err := utils.DB().Where(models.Subscribtion{StockSymbol: sub.StockSymbol, UserID: user.ID}).Assign(subscribtion).FirstOrCreate(&subscribtion).Error
+		err := utils.DB().Where(models.Subscribtion{StockSymbol: sub.StockSymbol, UserID: user.ID}).Assign(subscribtion).Save(&subscribtion).Error
 		if err != nil {
 			return subs, err
 		}

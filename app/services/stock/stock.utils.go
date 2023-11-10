@@ -52,7 +52,7 @@ func GetStockInfoFromAPI(symbol string) (*object.StockData, error){
 		LastUpdate: stockMetaData.Data.LastPrice.UpdatedAt,
 	}
 
-	err = utils.DB().Where(models.Stock{Symbol: symbol}).Assign(stock).FirstOrCreate(&stock).Error
+	err = utils.DB().Where(models.Stock{Symbol: symbol}).Assign(stock).Save(&stock).Error
 	result := &object.StockData{Name: stock.Name, Symbol: stock.Symbol, Description: stock.Description, Sector: stock.Sector, Logo: stock.Logo, Website: stock.Website, OpenPrice: stock.OpenPrice, ClosePrice: stock.ClosePrice, HighestPrice: stock.HighestPrice, LowestPrice: stock.LowestPrice, Volume: stock.Volume, LastUpdate: stock.LastUpdate}
 	
 	return result, err
